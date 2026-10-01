@@ -2899,8 +2899,7 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 		return
 	}
 
-	// Handle Mirasim accounts：自适应网关目录（claude-* 走 Anthropic，gpt 走 Chat Completions）。
-	// 优先账号 model_mapping 的 key（管理员手动配置的可用模型），否则复用 Claude 目录 + 少量 GPT 模型。
+	// Mirasim 优先使用账号显式映射；未配置时与对外模型列表共用目录，避免测试弹窗遗漏新模型。
 	if account.IsMirasim() {
 		mapping := account.GetModelMapping()
 		if len(mapping) > 0 {
@@ -2916,10 +2915,17 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 			response.Success(c, models)
 			return
 		}
-		models := make([]claude.Model, 0, len(claude.DefaultModels)+3)
-		models = append(models, claude.DefaultModels...)
-		for _, id := range []string{"gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra"} {
-			models = append(models, claude.Model{ID: id, Type: "model", DisplayName: id})
+		defaultByID := make(map[string]claude.Model, len(claude.DefaultModels)+len(openai.DefaultModels))
+		for _, model := range claude.DefaultModels {
+			defaultByID[model.ID] = model
+		}
+		for _, model := range openai.DefaultModels {
+			defaultByID[model.ID] = claude.Model{ID: model.ID, Type: "model", DisplayName: model.DisplayName}
+		}
+		ids := service.DefaultMirasimModelIDs()
+		models := make([]claude.Model, 0, len(ids))
+		for _, id := range ids {
+			models = append(models, defaultByID[id])
 		}
 		response.Success(c, models)
 		return

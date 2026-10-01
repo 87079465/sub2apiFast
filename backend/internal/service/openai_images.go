@@ -231,7 +231,7 @@ func (s *OpenAIGatewayService) ParseOpenAIImagesRequest(c *gin.Context, body []b
 	applyOpenAIImagesDefaults(req)
 	// Composite middleware preserves multipart bodies, including their public
 	// alias. Validate and forward the resolved model without altering uploads.
-	if platform, _ := ResolvedTargetPlatformFromContext(c.Request.Context()); platform == PlatformOpenAI {
+	if platform, _ := ResolvedTargetPlatformFromContext(c.Request.Context()); platform == PlatformOpenAI || platform == PlatformMirasim {
 		if model, ok := ResolvedUpstreamModelFromContext(c.Request.Context()); ok {
 			req.Model = model
 		}
@@ -606,6 +606,9 @@ func (s *OpenAIGatewayService) ForwardImages(
 ) (*OpenAIForwardResult, error) {
 	if parsed == nil {
 		return nil, fmt.Errorf("parsed images request is required")
+	}
+	if account.IsMirasim() {
+		return s.forwardOpenAIImagesOAuth(ctx, c, account, parsed, channelMappedModel)
 	}
 	switch account.Type {
 	case AccountTypeAPIKey:
@@ -990,7 +993,7 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 ) (OpenAIUsage, int, []string, *int, error) {
 	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
 	contentType := strings.TrimSpace(resp.Header.Get("Content-Type"))
-	if contentType == "" {
+	if direct != nil || contentType == "" {
 		contentType = "text/event-stream"
 	}
 	c.Status(resp.StatusCode)
@@ -1013,6 +1016,9 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 	fallbackTooLarge := false
 	var sseData openAISSEDataAccumulator
 	var streamErr error
+	// 直连无图时的诊断信息：最多记录 10 个事件类型与首个脱敏数据片段。
+	var diagEventTypes []string
+	diagSample := ""
 	finish := func() error {
 		if direct == nil {
 			return nil
@@ -1021,6 +1027,9 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 			return streamErr
 		}
 		if !seenSSEData || imageCounter.Count() == 0 {
+			// 记录上游实际返回形态（响应类型、事件类型、脱敏片段），便于定位未识别的直连响应格式。
+			logger.LegacyPrintf("service.openai_gateway", "[OpenAI] Images direct stream returned no image content_type=%q seen_sse=%v events=%s sample=%s",
+				resp.Header.Get("Content-Type"), seenSSEData, strings.Join(diagEventTypes, ","), diagSample)
 			return newOpenAIUpstreamStreamReadError(ErrOpenAIUpstreamStreamTruncated)
 		}
 		return nil
@@ -1033,6 +1042,14 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 		seenSSEData = true
 		fallbackBody.Reset()
 		fallbackBytes = 0
+		if direct != nil {
+			if len(diagEventTypes) < 10 {
+				diagEventTypes = append(diagEventTypes, gjson.GetBytes(dataBytes, "type").String())
+			}
+			if diagSample == "" {
+				diagSample = summarizeOpenAIImagesDiagSample(dataBytes)
+			}
+		}
 		if direct != nil && strings.HasSuffix(gjson.GetBytes(dataBytes, "type").String(), ".completed") {
 			if size := detectOpenAIImageResultSize(gjson.GetBytes(dataBytes, "b64_json").String()); size != "" {
 				dataBytes, _ = sjson.SetBytes(dataBytes, "size", size)
@@ -1129,6 +1146,14 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 
 	finalizeFallbackBody := func() {
 		if direct != nil {
+			// 直连上游忽略 stream 直接返回完整 JSON 时（如 Mirasim 中继），转换为完成事件下发，
+			// 避免已生成的图片被当作流截断丢弃。
+			if !seenSSEData && diagSample == "" {
+				diagSample = summarizeOpenAIImagesDiagSample(fallbackBody.Bytes())
+			}
+			if !seenSSEData && !fallbackTooLarge {
+				s.emitCodexDirectImagesJSONAsStream(c, flusher, direct, bytes.TrimSpace(fallbackBody.Bytes()), &usage, imageCounter, &streamErr, &seenSSEData, &clientDisconnected, &lastDownstreamWriteAt)
+			}
 			return
 		}
 		if seenSSEData || fallbackBody.Len() == 0 {

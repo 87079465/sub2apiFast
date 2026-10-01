@@ -124,6 +124,18 @@ func TestGatewayRoutesOpenAIImagesPathsAreRegistered(t *testing.T) {
 	}
 }
 
+// TestGatewayRoutesMirasimImagesPaths 验证 Mirasim 图片入口进入鉴权及生图处理链。
+func TestGatewayRoutesMirasimImagesPaths(t *testing.T) {
+	router := newGatewayRoutesTestRouter(service.PlatformMirasim)
+	for _, path := range []string{"/v1/images/generations", "/v1/images/edits", "/images/generations", "/images/edits"} {
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(`{"model":"gpt-image-2","prompt":"生成蓝色圆形"}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		require.NotEqual(t, http.StatusNotFound, w.Code, "Mirasim 图片路由未注册：%s", path)
+	}
+}
+
 func TestGatewayRoutesAsyncImagesPathsAreRegistered(t *testing.T) {
 	router := newGatewayRoutesTestRouter()
 	registered := make(map[string]bool)

@@ -452,6 +452,15 @@ func shouldPassOpenAIImagesN(model string, n int) bool {
 	return !strings.EqualFold(strings.TrimSpace(model), "dall-e-3")
 }
 
+// buildMirasimImagesResponsesRequest 复用图片协议转换，明确使用 Mirasim 已支持的主控模型。
+func buildMirasimImagesResponsesRequest(parsed *OpenAIImagesRequest, toolModel string) ([]byte, error) {
+	body, err := buildOpenAIImagesResponsesRequest(parsed, toolModel)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.SetBytes(body, "model", "gpt-6-astra")
+}
+
 func extractOpenAIImagesFromResponsesCompleted(payload []byte) ([]openAIResponsesImageResult, int64, []byte, openAIResponsesImageResult, error) {
 	if gjson.GetBytes(payload, "type").String() != "response.completed" {
 		return nil, 0, nil, openAIResponsesImageResult{}, fmt.Errorf("unexpected event type")
@@ -1803,16 +1812,24 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 	if err := validateOpenAIImagesModel(upstreamModel); err != nil {
 		return nil, err
 	}
+	// Mirasim 与官方客户端一致优先走中继直连 Images 端点，不经过对话主控模型；
+	// 直连返回 404/405 时下方逻辑会强制退回 Responses image_generation 工具。
 	direct := usesCodexDirectImages(upstreamModel) && !isOpenAIImagesForceResponses(ctx)
+	if account.IsMirasim() {
+		direct = usesMirasimDirectImages(upstreamModel) && !isOpenAIImagesForceResponses(ctx)
+	}
 	beginUpstreamResponseModelObservation(c)
 	SetOpsUpstreamModel(c, upstreamModel)
 	logger.LegacyPrintf(
 		"service.openai_gateway",
-		"[OpenAI] Images request routing request_model=%s endpoint=%s account_type=%s uploads=%d",
+		"[OpenAI] Images request routing request_model=%s endpoint=%s account_type=%s uploads=%d platform=%s upstream_model=%s direct=%v",
 		requestModel,
 		parsed.Endpoint,
 		account.Type,
 		len(parsed.Uploads),
+		account.Platform,
+		upstreamModel,
+		direct,
 	)
 	upstreamCtx, releaseUpstreamCtx := detachUpstreamContext(ctx)
 	defer releaseUpstreamCtx()
@@ -1826,6 +1843,19 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 	var targetURL string
 	if direct {
 		responsesBody, targetURL, err = buildOpenAIImagesOAuthPayload(parsed, upstreamModel)
+		if err == nil && account.IsMirasim() {
+			// 步骤 1：Mirasim 直连地址使用账号 Responses 中继的同一基础地址，替换 Codex 官方图片端点。
+			baseURL, validateErr := s.validateUpstreamBaseURL(account.GetCNProtocolBaseURL(APIProtocolResponses))
+			if validateErr != nil {
+				return nil, validateErr
+			}
+			targetURL = buildMirasimImagesDirectURL(baseURL, parsed.IsEdits())
+			// 中继对非流式请求约 120 秒超时（504），上游一律以流式请求保持连接；
+			// 客户端非流式时由 handleMirasimDirectImagesStreamAsJSON 聚合为 JSON。
+			responsesBody, err = sjson.SetBytes(responsesBody, "stream", true)
+		}
+	} else if account.IsMirasim() {
+		responsesBody, err = buildMirasimImagesResponsesRequest(parsed, upstreamModel)
 	} else {
 		responsesBody, err = buildOpenAIImagesResponsesRequest(parsed, upstreamModel)
 		targetURL = chatgptCodexURL
@@ -1834,20 +1864,28 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 		return nil, err
 	}
 	upstreamCtx = withOpenAIImagesSelfBuiltRequest(upstreamCtx)
+	if direct {
+		// 步骤 2：标记直连载荷，避免 Mirasim 的 Responses 规范化给图片请求强塞 stream/input。
+		upstreamCtx = withOpenAIImagesDirectRequest(upstreamCtx)
+	}
 	upstreamReq, err := s.buildUpstreamRequest(upstreamCtx, c, account, responsesBody, token, true, parsed.StickySessionSeed(), false)
 	if err != nil {
 		return nil, err
 	}
-	// 复用 Codex 认证、影子账号及指纹头；仅切换已构造请求的端点和响应协议。
-	upstreamReq.URL, err = url.Parse(targetURL)
-	if err != nil {
-		return nil, err
+	// 步骤 3：直连统一改写为图片端点；Mirasim 退回 Responses 时保留账号构造的中继地址，
+	// 其他账号沿用既有 Codex Responses 端点。签名在传输层基于最终 URL 与请求体完成。
+	if direct || !account.IsMirasim() {
+		upstreamReq.URL, err = url.Parse(targetURL)
+		if err != nil {
+			return nil, err
+		}
 	}
 	upstreamReq.Header.Set("Content-Type", "application/json")
 	upstreamReq.Header.Set("Accept", "text/event-stream")
 	if direct {
 		upstreamReq.Header.Del("OpenAI-Beta")
-		if !parsed.Stream {
+		// Mirasim 直连上游始终为流式，保持 text/event-stream。
+		if !parsed.Stream && !account.IsMirasim() {
 			upstreamReq.Header.Set("Accept", "application/json")
 		}
 	} else {
@@ -1882,6 +1920,7 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 		_ = resp.Body.Close()
 		respBody = s.redactAgentIdentitySensitiveBody(upstreamCtx, account, respBody)
 		if direct && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusMethodNotAllowed) {
+			logger.LegacyPrintf("service.openai_gateway", "[OpenAI] Images direct endpoint unsupported, fallback to responses platform=%s account_id=%d status=%d url=%s", account.Platform, account.ID, resp.StatusCode, safeUpstreamURL(upstreamReq.URL.String()))
 			return s.forwardOpenAIImagesOAuth(withOpenAIImagesForceResponses(ctx), c, account, parsed, channelMappedModel)
 		}
 		if !agentIdentityTaskRecoveryWasTried(ctx) && s.isAgentIdentityAccount(ctx, account) && isAgentIdentityTaskInvalidHTTPResponse(resp.StatusCode, respBody) {
@@ -1973,7 +2012,10 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 			)
 		}
 	} else {
-		if direct {
+		if direct && account.IsMirasim() {
+			// Mirasim 直连上游为流式，读取完整事件流后聚合为非流式 JSON 返回客户端。
+			usage, imageCount, imageOutputSizes, err = s.handleMirasimDirectImagesStreamAsJSON(resp, c, parsed)
+		} else if direct {
 			usage, imageCount, imageOutputSizes, err = s.handleCodexDirectImagesNonStreamingResponse(resp, c, parsed)
 		} else {
 			usage, imageCount, imageOutputSizes, err = s.handleOpenAIImagesOAuthNonStreamingResponse(resp, c, parsed.ResponseFormat, requestModel)

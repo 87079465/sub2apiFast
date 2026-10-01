@@ -477,6 +477,10 @@ export function getModelsByPlatform(platform: string): string[] {
       'claude-sonnet-4-6',
       'claude-haiku-4-5',
       'gpt-6-astra',
+      'gpt-6-sol',
+      'gpt-image-2',
+      'gpt-image-2.5-flare',
+      'gpt-image-2.5-sunburst',
       'gpt-5.5',
       'gemini-3-flash',
       'deepseek-v3'

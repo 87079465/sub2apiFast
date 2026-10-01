@@ -728,6 +728,23 @@ go generate ./cmd/server
 
 OAuth / Setup Token 图片请求使用 Responses 主控模型调用 `image_generation` 工具，默认主控为 `gpt-5.6-luna`。可设置 `SUB2API_IMAGES_MAIN_MODEL` 切换为账号支持的文本模型；Docker Compose 用户修改 `.env` 后执行 `docker compose up -d` 重建容器。该配置不会替换所选图片模型，也不会覆盖 `/v1/responses` 请求中已经提供的文本主控模型。
 
+### 使用 Mirasim 额度生图
+
+在管理后台编辑 Mirasim 分组，开启「允许图片生成」，使用绑定该分组的 API Key 请求 `/v1/images/generations` 或 `/v1/images/edits`。已验证模型为 `gpt-image-2`，后台账号测试也支持图片预览。账号或分组配置了模型白名单时，需要允许该图片模型。
+
+```json
+{
+  "model": "gpt-image-2",
+  "prompt": "生成一张纯白背景、中心一个蓝色圆形的图片",
+  "size": "1024x1024",
+  "response_format": "b64_json"
+}
+```
+
+Mirasim 图片请求使用 Mirasim 账号的设备票据和签名，只发往账号配置的 Mirasim 中继，不调用 OpenAI 官方图片地址。`gpt-image-2` 与官方客户端一致，直连中继的 `/v1/images/generations`、`/v1/images/edits`，不经过对话主控模型；由于中继对非流式请求约 120 秒超时（504），网关向中继一律以流式请求，客户端非流式时再聚合为标准 JSON 返回。中继直连返回 404/405 时自动退回 `/v1/responses` 的 `image_generation` 工具（主控模型 `gpt-6-astra`，图片模型放在 `image_generation.model` 中）。`gpt-image-2.5-flare`、`gpt-image-2.5-sunburst` 等其他图片模型在中继直连端点不可用，直接使用 Responses 工具方式，实际执行模型以 Mirasim 为准。支持 JSON 图片生成、JSON 或 multipart 图片编辑，以及流式和非流式返回。也可以直接请求 `/v1/responses`，显式提供 `image_generation` 工具和 Mirasim 支持的对话主控模型。
+
+实测请求 `gpt-image-2` 时，Mirasim 返回的工具模型为 `gpt-image-2-codex`；最终模型、图片参数和额度消耗以 Mirasim 实际执行结果为准。网关计费沿用分组的图片定价配置。此功能需要显式开启，不会自动为所有 Mirasim 分组放开生图。
+
 升级后，无模型限制的账号自动支持新模型。已有显式账号映射或分组白名单需要加入两个 2.5 模型（日期快照按需加入）；升级不会自动扩大管理员设置的模型权限。新模型内置价格包含官方文本输入、图片输入和图片输出 token 费率，远端价格表尚未更新时使用内置 2.5 价格；实际按次或按 token 计费仍由既有分组/渠道配置决定。
 
 ## 简易模式

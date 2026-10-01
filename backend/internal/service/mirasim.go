@@ -102,16 +102,20 @@ func GetMirasimTicketManager() *MirasimTicketManager {
 }
 
 // DefaultMirasimModelIDs 返回 Mirasim 平台常见模型目录，供目录未同步时回退。
-// Claude 部分复用 claude.DefaultModels 目录，GPT 仅保留 6 / 5.6 系，供测试连接与模型同步使用。
+// Claude 部分复用现有目录，GPT 包含对话与图片模型，供测试连接与模型同步使用。
 func DefaultMirasimModelIDs() []string {
-	ids := make([]string, 0, len(claude.DefaultModels)+3)
+	ids := make([]string, 0, len(claude.DefaultModels)+7)
 	for _, m := range claude.DefaultModels {
 		ids = append(ids, m.ID)
 	}
 	ids = append(ids,
 		"gpt-6-astra",
+		"gpt-6-sol",
 		"gpt-5.6-sol",
 		"gpt-5.6-terra",
+		"gpt-image-2",
+		"gpt-image-2.5-flare",
+		"gpt-image-2.5-sunburst",
 	)
 	return ids
 }

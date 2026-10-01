@@ -2136,13 +2136,14 @@ func (s *OpenAIGatewayService) SelectAccountWithSchedulerForImages(
 	requestedModel string,
 	excludedIDs map[int64]struct{},
 	requiredCapability OpenAIImagesCapability,
+	platform string,
 ) (*AccountSelectionResult, OpenAIAccountScheduleDecision, error) {
-	selection, decision, err := s.selectAccountWithScheduler(ctx, groupID, "", sessionHash, requestedModel, excludedIDs, OpenAIUpstreamTransportHTTPSSE, "", requiredCapability, false, PlatformOpenAI, false, false)
+	selection, decision, err := s.selectAccountWithScheduler(ctx, groupID, "", sessionHash, requestedModel, excludedIDs, OpenAIUpstreamTransportHTTPSSE, "", requiredCapability, false, platform, false, false)
 	if err == nil && selection != nil && selection.Account != nil {
 		return selection, decision, nil
 	}
 	// 如果要求 native 能力（如指定了模型）但没有可用的 APIKey 账号，回退到 basic（OAuth 账号）
-	if requiredCapability == OpenAIImagesCapabilityNative {
+	if platform == PlatformOpenAI && requiredCapability == OpenAIImagesCapabilityNative {
 		return s.selectAccountWithScheduler(ctx, groupID, "", sessionHash, requestedModel, excludedIDs, OpenAIUpstreamTransportHTTPSSE, "", OpenAIImagesCapabilityBasic, false, PlatformOpenAI, false, false)
 	}
 	return selection, decision, err

@@ -1413,8 +1413,9 @@ func (s *OpenAIGatewayService) buildUpstreamRequest(ctx context.Context, c *gin.
 	// DeepSeek / Kimi 原生 Responses 端点为无状态实现：强制 store=false、清除
 	// previous_response_id，避免携带状态字段被上游拒绝。
 	body = normalizeDeepSeekResponsesRequestBody(account, body)
-	if account.IsMirasim() {
+	if account.IsMirasim() && !isOpenAIImagesDirectRequest(ctx) {
 		// 仅改变上游请求；Forward 保留客户端 stream 值，非流式响应复用 SSE 聚合。
+		// 直连 Images 载荷不是 Responses 协议，不能强制 stream 或改写 input。
 		var err error
 		body, err = normalizeMirasimResponsesRequestBody(body)
 		if err != nil {

@@ -36,6 +36,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 // sseDataPrefix matches SSE data lines with optional whitespace after colon.
@@ -440,6 +441,9 @@ func (s *AccountTestService) testMirasimAccountConnection(c *gin.Context, accoun
 
 	if strings.TrimSpace(account.GetMirasimIssuerToken()) == "" && strings.TrimSpace(account.GetCredential("api_key")) == "" {
 		return s.sendErrorAndEnd(c, "No access token available")
+	}
+	if isOpenAIImageModel(testModelID) {
+		return s.testOpenAIImageOAuth(c, ctx, account, modelID, prompt)
 	}
 
 	proto := mirasimNativeProtocol(account, testModelID)
@@ -3288,21 +3292,28 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 		credentialAccount = resolved
 	}
 	authToken := ""
-	if !credentialAccount.IsOpenAIAgentIdentity() {
+	if credentialAccount.IsMirasim() {
+		// Mirasim 凭据可能是 issuer_token（OAuth）或 api_key（APIKey），与正式转发取值口径一致；
+		// 出站前签名会再以设备票据替换鉴权头。
+		authToken = credentialAccount.GetOpenAIProtocolAPIKey()
+	} else if !credentialAccount.IsOpenAIAgentIdentity() {
 		authToken = credentialAccount.GetOpenAIAccessToken()
 	}
 	if authToken == "" && !credentialAccount.IsOpenAIAgentIdentity() {
 		return s.sendErrorAndEnd(c, "No access token available")
 	}
 
-	// Set SSE headers
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("X-Accel-Buffering", "no")
-	c.Writer.Flush()
+	// Mirasim 直连不支持而退回 Responses 时复用同一条 SSE 流，不重复写响应头和开始事件。
+	if !isOpenAIImagesForceResponses(ctx) {
+		// Set SSE headers
+		c.Writer.Header().Set("Content-Type", "text/event-stream")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
+		c.Writer.Header().Set("Connection", "keep-alive")
+		c.Writer.Header().Set("X-Accel-Buffering", "no")
+		c.Writer.Flush()
 
-	s.sendEvent(c, TestEvent{Type: "test_start", Model: modelID})
+		s.sendEvent(c, TestEvent{Type: "test_start", Model: modelID})
+	}
 
 	parsed := &OpenAIImagesRequest{
 		Endpoint: openAIImagesGenerationsEndpoint,
@@ -3312,13 +3323,43 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 	applyOpenAIImagesDefaults(parsed)
 
 	upstreamModel := account.GetMappedModel(parsed.Model)
-	responsesBody, targetURL, err := buildOpenAIImagesOAuthPayload(parsed, upstreamModel)
+	var responsesBody []byte
+	var targetURL string
+	var err error
+	direct := usesCodexDirectImages(upstreamModel)
+	if account.IsMirasim() {
+		// Mirasim 与正式转发一致：优先直连中继 Images 端点，直连不支持时强制退回 Responses 工具。
+		direct = usesMirasimDirectImages(upstreamModel) && !isOpenAIImagesForceResponses(ctx)
+		baseURL, validateErr := s.validateUpstreamBaseURL(account.GetCNProtocolBaseURL(APIProtocolResponses))
+		if validateErr != nil {
+			return s.sendErrorAndEnd(c, fmt.Sprintf("Mirasim 中继地址无效：%s", validateErr))
+		}
+		if direct {
+			responsesBody, _, err = buildOpenAIImagesOAuthPayload(parsed, upstreamModel)
+			if err == nil {
+				// 中继对非流式请求约 120 秒超时，测试同样以流式请求，读取后再聚合解析。
+				responsesBody, err = sjson.SetBytes(responsesBody, "stream", true)
+			}
+			targetURL = buildMirasimImagesDirectURL(baseURL, false)
+		} else {
+			responsesBody, err = buildMirasimImagesResponsesRequest(parsed, upstreamModel)
+			targetURL = buildOpenAIResponsesURLForPlatform(account.Platform, baseURL)
+		}
+		if err != nil {
+			return s.sendErrorAndEnd(c, fmt.Sprintf("构造 Mirasim 生图请求失败：%s", err))
+		}
+	} else {
+		responsesBody, targetURL, err = buildOpenAIImagesOAuthPayload(parsed, upstreamModel)
+	}
 	if err != nil {
 		return s.sendErrorAndEnd(c, fmt.Sprintf("Failed to build image request: %s", err.Error()))
 	}
 
-	direct := usesCodexDirectImages(upstreamModel)
-	if direct {
+	if account.IsMirasim() && direct {
+		s.sendEvent(c, TestEvent{Type: "content", Text: fmt.Sprintf("通过 Mirasim 中继直连图片接口生图；图片模型：%s\n", upstreamModel)})
+	} else if account.IsMirasim() {
+		s.sendEvent(c, TestEvent{Type: "content", Text: fmt.Sprintf("通过 Mirasim Responses 图片工具生图；主控模型：gpt-6-astra；图片模型：%s\n", upstreamModel)})
+	} else if direct {
 		s.sendEvent(c, TestEvent{Type: "content", Text: fmt.Sprintf("Calling Codex /images/generations; image model: %s\n", upstreamModel)})
 	} else {
 		s.sendEvent(c, TestEvent{Type: "content", Text: fmt.Sprintf("Calling Codex /responses image tool; driver: %s; image model: %s\n", openAIImagesResponsesMainModelValue(), upstreamModel)})
@@ -3328,7 +3369,9 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 		return s.sendErrorAndEnd(c, "Failed to create request")
 	}
 	req = req.WithContext(WithHTTPUpstreamProfile(req.Context(), HTTPUpstreamProfileOpenAI))
-	req.Host = "chatgpt.com"
+	if !account.IsMirasim() {
+		req.Host = "chatgpt.com"
+	}
 	if credentialAccount.IsOpenAIAgentIdentity() {
 		authHeaders, authErr := buildAgentIdentityAuthenticationHeaders(ctx, s.accountRepo, s.agentIdentityWS, &s.agentIdentityTaskMu, credentialAccount)
 		if authErr != nil {
@@ -3347,7 +3390,10 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 	req.Header.Set("OpenAI-Beta", "responses=experimental")
 	if direct {
 		req.Header.Del("OpenAI-Beta")
-		req.Header.Set("Accept", "application/json")
+		// Mirasim 直连以流式请求，保持 text/event-stream。
+		if !account.IsMirasim() {
+			req.Header.Set("Accept", "application/json")
+		}
 	}
 	canonical := resolveCodexOutboundIdentity("")
 	req.Header.Set("originator", canonical.originator)
@@ -3360,6 +3406,13 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 	// 与真实转发一致：账号级自定义 UA 同样作为管理员显式配置传入，否则测试用的身份
 	// 与该账号真实出站的身份不是同一个（issue #3901 的配对不变式由收口保证）。
 	enforceCodexIdentityHeadersWithUA(req.Header, credentialAccount.GetOpenAIUserAgent())
+	if account.IsMirasim() {
+		req.Header.Del("originator")
+		applyMirasimSessionHeader(c, account, req.Header, responsesBody)
+		if err := signMirasimUpstreamRequest(req, account); err != nil {
+			return s.sendErrorAndEnd(c, fmt.Sprintf("Mirasim 生图签名失败：%s", err))
+		}
+	}
 
 	proxyURL := ""
 	if account.ProxyID != nil && account.Proxy != nil {
@@ -3376,6 +3429,11 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 	}()
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+		if account.IsMirasim() && direct && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusMethodNotAllowed) {
+			// 中继未开放直连图片端点时，与正式转发一致退回 Responses image_generation 工具再测一次。
+			s.sendEvent(c, TestEvent{Type: "content", Text: fmt.Sprintf("Mirasim 直连图片接口返回 %d，改用 Responses 图片工具重试\n", resp.StatusCode)})
+			return s.testOpenAIImageOAuth(c, withOpenAIImagesForceResponses(ctx), account, modelID, prompt)
+		}
 		body = redactAgentIdentitySensitiveBodyForAccount(ctx, s.accountRepo, credentialAccount, body)
 		message := strings.TrimSpace(extractUpstreamErrorMessage(body))
 		if message == "" {
@@ -3392,7 +3450,13 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 
 	var results []openAIResponsesImageResult
 	if direct {
-		results, err = parseCodexDirectImagesResponse(body)
+		if account.IsMirasim() {
+			// Mirasim 直连返回 SSE 事件流，先聚合为 Images JSON 再按统一口径解析。
+			body, err = buildCodexDirectImagesJSONFromSSE(body)
+		}
+		if err == nil {
+			results, err = parseCodexDirectImagesResponse(body)
+		}
 	} else {
 		if upstreamErr := extractOpenAIImagesUpstreamError(body); upstreamErr != nil {
 			return s.sendErrorAndEnd(c, upstreamErr.clientMessage())

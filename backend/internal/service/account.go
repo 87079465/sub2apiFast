@@ -2072,6 +2072,12 @@ func (a *Account) SupportsOpenAIImageCapability(capability OpenAIImagesCapabilit
 	if capability == "" {
 		return true
 	}
+	if a.IsMirasim() {
+		// Mirasim 图片统一通过原生 Responses 工具生成，不支持其他供应商的 Images 透传。
+		return (a.Type == AccountTypeOAuth || a.Type == AccountTypeAPIKey) &&
+			(capability == OpenAIImagesCapabilityBasic || capability == OpenAIImagesCapabilityNative) &&
+			a.UsesNativeCNResponses()
+	}
 	if !a.IsOpenAI() {
 		return false
 	}
