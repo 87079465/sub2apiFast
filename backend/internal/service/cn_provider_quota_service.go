@@ -722,7 +722,7 @@ func parseZhipuTokenTiers(data gjson.Result) []CNQuotaTier {
 }
 
 // cnQuotaExtraUpdates 根据 tier 列表构造 provider 维度的 Extra 快照更新。
-// 标准窗口（5h/weekly/monthly）落固定键；Mirasim 的 7d/7d_claude/7d_fable 等
+// 标准窗口（5h/weekly/monthly）落固定键；Mirasim 的 30d 等
 // 窗口按 window 名透传落 <provider>_<window>_used_percent/_reset_at，供前端按名渲染。
 func cnQuotaExtraUpdates(provider string, tiers []CNQuotaTier, now time.Time) map[string]any {
 	updates := map[string]any{
@@ -746,10 +746,10 @@ func cnQuotaExtraUpdates(provider string, tiers []CNQuotaTier, now time.Time) ma
 				updates[cnExtraKey(provider, cnExtraSuffixMonthlyReset)] = t.ResetAt
 			}
 		default:
-			// Mirasim 扩展窗口（7d / 7d_claude / 7d_fable ...）：按 window 名落快照。
+			// Mirasim 的 30d 窗口按原名落快照；未首次调用时清除上一期到期时间。
 			if key, ok := cnQuotaWindowSnapshotKey(t.Window); ok {
 				updates[cnExtraKey(provider, key+"_used_percent")] = t.UsedPercent
-				if t.ResetAt != "" {
+				if t.ResetAt != "" || provider == PlatformMirasim {
 					updates[cnExtraKey(provider, key+"_reset_at")] = t.ResetAt
 				}
 			}
@@ -759,7 +759,7 @@ func cnQuotaExtraUpdates(provider string, tiers []CNQuotaTier, now time.Time) ma
 }
 
 // cnQuotaWindowSnapshotKey 校验扩展 window 名是否可安全用作 extra 键后缀。
-// 仅允许小写字母数字与下划线（Mirasim 的 7d/7d_claude/7d_fable 均满足），
+// 仅允许小写字母数字与下划线（Mirasim 的 30d 满足），
 // 避免上游注入非法键名污染 account.Extra。
 func cnQuotaWindowSnapshotKey(window string) (string, bool) {
 	w := strings.TrimSpace(strings.ToLower(window))

@@ -38,7 +38,7 @@ func (a *Account) getRateLimitRemainingForKey(key string) time.Duration {
 }
 
 func (a *Account) isModelRateLimitedWithContext(ctx context.Context, requestedModel string) bool {
-	if a.mirasimQuotaRemaining(requestedModel, time.Now()) > 0 {
+	if a.mirasimQuotaRemaining(time.Now()) > 0 {
 		return true
 	}
 	for _, key := range a.modelRateLimitKeysForRequest(ctx, requestedModel) {
@@ -56,7 +56,7 @@ func (a *Account) GetModelRateLimitRemainingTime(requestedModel string) time.Dur
 }
 
 func (a *Account) GetModelRateLimitRemainingTimeWithContext(ctx context.Context, requestedModel string) time.Duration {
-	remaining := a.mirasimQuotaRemaining(requestedModel, time.Now())
+	remaining := a.mirasimQuotaRemaining(time.Now())
 	for _, key := range a.modelRateLimitKeysForRequest(ctx, requestedModel) {
 		if keyRemaining := a.getRateLimitRemainingForKey(key); keyRemaining > remaining {
 			remaining = keyRemaining
@@ -82,9 +82,7 @@ func (a *Account) modelRateLimitKeysForRequest(ctx context.Context, requestedMod
 	keys := []string{modelKey}
 	switch a.Platform {
 	case PlatformMirasim:
-		for _, window := range mirasimQuotaWindows(modelKey) {
-			keys = append(keys, "mirasim:"+window)
-		}
+		keys = append(keys, "mirasim:30d")
 	case PlatformAntigravity:
 		if isAntigravityGeminiModel(modelKey) && modelKey != antigravityGeminiModelRateLimitKey {
 			keys = append(keys, antigravityGeminiModelRateLimitKey)

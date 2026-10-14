@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/mirasim"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
@@ -47,15 +46,14 @@ func mirasimSessionID(headers http.Header, bodies ...[]byte) string {
 	return ""
 }
 
-// prepareMirasimRelayMetadata 对齐官方 App 0.0.354 的 relay 推理请求。
-// 会话、账号、语言与调用标识在设备签名前写入请求头，随后随设备认证字段一起封装；额度查询不添加推理元数据。
+// prepareMirasimRelayMetadata 对齐官方 App 0.0.383 的 relay 推理请求。
+// 会话、语言与调用标识在设备签名前写入请求头，随后随设备认证字段一起封装；额度查询不添加推理元数据。
 // 参数：
 //   - req: 发往上游的 HTTP 请求对象
-//   - ticket: 本次使用的设备票据（JWT），用于取出其 sub 作为账号标识
 //   - body: 请求体字节切片，用于回溯真实会话标识
 // 返回值：
 //   - error: 处理过程中的错误
-func prepareMirasimRelayMetadata(req *http.Request, ticket string, body []byte) error {
+func prepareMirasimRelayMetadata(req *http.Request, body []byte) error {
 	if req.Method != http.MethodPost {
 		return nil
 	}
@@ -77,8 +75,7 @@ func prepareMirasimRelayMetadata(req *http.Request, ticket string, body []byte) 
 	if sessionID == "" {
 		sessionID = "mirasim_" + uuid.NewString()
 	}
-	// 步骤 2: 解析账号与语言，对齐 App relayMeta 的 x-mirasim-account / x-mirasim-locale（均为“存在才发”）。
-	account := mirasimTicketSubject(ticket)
+	// 步骤 2: 使用客户端提供的语言；网关没有 App 的 identity.accountId，不用登录用户 sub 冒充。
 	locale := firstAcceptLanguage(req.Header.Get("Accept-Language"))
 	// 步骤 3: 先移除所有大小写变体，避免入站/重试残留的同名元数据参与签名时产生不确定值。
 	for key := range req.Header {
@@ -87,13 +84,10 @@ func prepareMirasimRelayMetadata(req *http.Request, ticket string, body []byte) 
 			delete(req.Header, key)
 		}
 	}
-	// 步骤 4: 写入本次会话元数据；account/locale 缺失时不设置，与官方 App 保持一致。
+	// 步骤 4: 写入本次会话元数据；缺少语言或 App 本地账号标识时省略对应字段。
 	req.Header.Set("x-mirasim-session", sessionID)
 	req.Header.Set("x-mirasim-agent", agent)
 	req.Header.Set("x-mirasim-call", callID.String())
-	if account != "" {
-		req.Header.Set("x-mirasim-account", account)
-	}
 	if locale != "" {
 		req.Header.Set("x-mirasim-locale", locale)
 	}
@@ -118,23 +112,6 @@ func prepareMirasimRelayMetadata(req *http.Request, ticket string, body []byte) 
 		req.Header.Set("anthropic-beta", strings.Join(betaTokens, ","))
 	}
 	return nil
-}
-
-// mirasimTicketSubject 从设备票据（JWT）中解析 sub 作为账号标识。
-// 官方 App 的 x-mirasim-account 等于登录用户 ID，且服务端会校验票据 sub 与账号一致，故此处取票据 sub。
-// 参数：
-//   - ticket: 设备票据 JWT 字符串
-// 返回值：
-//   - string: 票据的 sub；票据为空、非 JWT 或缺 sub 时返回空串（调用方据此不设置该字段）
-func mirasimTicketSubject(ticket string) string {
-	if strings.TrimSpace(ticket) == "" {
-		return ""
-	}
-	sub, err := mirasim.ParseJWTSubject(ticket)
-	if err != nil {
-		return ""
-	}
-	return strings.TrimSpace(sub)
 }
 
 // firstAcceptLanguage 从 Accept-Language 头解析首个语言标签，对齐 App 的 locale（如 zh-CN）。

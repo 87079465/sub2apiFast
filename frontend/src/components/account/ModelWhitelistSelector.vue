@@ -1,5 +1,17 @@
 <template>
   <div>
+    <div v-if="usesMirasimCatalog" class="mb-3" data-testid="mirasim-model-catalog">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-sm text-gray-600 dark:text-gray-400">
+          {{ isLoadingCatalog ? t('admin.accounts.syncUpstreamModelsLoading') : t('admin.accounts.mirasim.models.count', { count: catalogModels.length }) }}
+        </span>
+        <button type="button" class="btn btn-secondary btn-sm" data-testid="refresh-model-catalog" :disabled="isLoadingCatalog" @click="loadMirasimCatalog">
+          {{ t('admin.accounts.mirasim.models.refresh') }}
+        </button>
+      </div>
+      <p class="input-hint">{{ t('admin.accounts.mirasim.models.hint') }}</p>
+      <p v-if="catalogError" role="alert" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ catalogError }}</p>
+    </div>
     <!-- Multi-select Dropdown -->
     <div class="relative mb-3">
       <div
@@ -34,8 +46,9 @@
       </div>
       <!-- Dropdown List -->
       <div
-        v-if="showDropdown"
-        class="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-600 dark:bg-dark-700"
+        v-if="showDropdown || usesMirasimCatalog"
+        :class="usesMirasimCatalog ? 'relative mt-2' : 'absolute left-0 right-0 top-full z-50 mt-1 shadow-lg'"
+        class="rounded-lg border border-gray-200 bg-white dark:border-dark-600 dark:bg-dark-700"
       >
         <div class="sticky top-0 border-b border-gray-200 bg-white p-2 dark:border-dark-600 dark:bg-dark-700">
           <input
@@ -86,7 +99,7 @@
             </button>
           </div>
           <div v-if="filteredModels.length === 0" class="px-3 py-4 text-center text-sm text-gray-500">
-            {{ t('admin.accounts.noMatchingModels') }}
+            {{ isLoadingCatalog ? t('admin.accounts.syncUpstreamModelsLoading') : t('admin.accounts.noMatchingModels') }}
           </div>
         </div>
       </div>
@@ -97,6 +110,7 @@
       <button
         type="button"
         @click="fillRelated"
+        :disabled="usesMirasimCatalog && (isLoadingCatalog || !!catalogError || catalogModels.length === 0)"
         class="rounded-lg border border-blue-200 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30"
       >
         {{ t('admin.accounts.fillRelatedModels') }}
@@ -145,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
 import { accountsAPI } from '@/api/admin/accounts'
@@ -184,6 +198,43 @@ const searchQuery = ref('')
 const customModel = ref('')
 const isComposing = ref(false)
 const isSyncingUpstream = ref(false)
+const catalogModels = ref<string[]>([])
+const catalogError = ref('')
+const isLoadingCatalog = ref(false)
+const usesMirasimCatalog = computed(() => props.platform === 'mirasim' && !!props.accountId)
+let catalogRequestID = 0
+
+// 目录刷新只更新候选项；白名单由用户勾选，并由编辑窗口统一保存。
+const loadMirasimCatalog = async () => {
+  const accountID = props.accountId
+  if (!usesMirasimCatalog.value || !accountID) return
+  const requestID = ++catalogRequestID
+  catalogError.value = ''
+  catalogModels.value = []
+  isLoadingCatalog.value = true
+  try {
+    const result = await accountsAPI.syncUpstreamModels(accountID)
+    if (requestID !== catalogRequestID) return
+    catalogModels.value = result.models
+  } catch (error) {
+    if (requestID !== catalogRequestID) return
+    const message = (error as { message?: string }).message || t('admin.accounts.syncUpstreamModelsFailed')
+    catalogError.value = t('admin.accounts.syncUpstreamModelsError', { message })
+  } finally {
+    if (requestID === catalogRequestID) isLoadingCatalog.value = false
+  }
+}
+
+watch([usesMirasimCatalog, () => props.accountId], () => {
+  catalogRequestID += 1
+  catalogModels.value = []
+  catalogError.value = ''
+  isLoadingCatalog.value = false
+  if (usesMirasimCatalog.value) void loadMirasimCatalog()
+}, { immediate: true })
+
+onBeforeUnmount(() => { catalogRequestID += 1 })
+
 const normalizedPlatforms = computed(() => {
   const rawPlatforms =
     props.platforms && props.platforms.length > 0
@@ -225,6 +276,9 @@ const canSyncUpstream = computed(() => {
 })
 
 const availableOptions = computed(() => {
+  if (usesMirasimCatalog.value) {
+    return catalogModels.value.map(model => ({ value: model, label: model }))
+  }
   if (normalizedPlatforms.value.length === 0) {
     return allModels
   }
@@ -289,6 +343,10 @@ const handleEnter = () => {
 }
 
 const fillRelated = () => {
+  if (usesMirasimCatalog.value) {
+    emit('update:modelValue', [...new Set([...props.modelValue, ...catalogModels.value])])
+    return
+  }
   const newModels = [...props.modelValue]
   for (const platform of normalizedPlatforms.value) {
     for (const model of getModelsByPlatform(platform)) {

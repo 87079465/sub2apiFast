@@ -18,16 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// testMirasimJWT 构造仅含 sub 声明的测试用 JWT（不验签），用于覆盖 x-mirasim-account 解析。
-func testMirasimJWT(sub string) string {
-	header := base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"none"}`))
-	payload := base64.RawURLEncoding.EncodeToString([]byte(`{"sub":"` + sub + `"}`))
-	return header + "." + payload + ".sig"
-}
-
 // TestMirasimRelayMetadataSession 校验真实会话来源、无会话兜底及每次调用的独立标识。
 func TestMirasimRelayMetadataSession(t *testing.T) {
-	ticket := testMirasimJWT("user-sub-123")
 	for _, tc := range []struct {
 		name string
 		path string
@@ -49,7 +41,7 @@ func TestMirasimRelayMetadataSession(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, "https://relay.invalid"+tc.path, strings.NewReader(tc.body))
 			require.NoError(t, err)
 			for key, values := range tc.headers { req.Header[key] = values }
-			require.NoError(t, prepareMirasimRelayMetadata(req, ticket, []byte(tc.body)))
+			require.NoError(t, prepareMirasimRelayMetadata(req, []byte(tc.body)))
 			gotSession := req.Header.Get("x-mirasim-session")
 			if tc.fallback {
 				require.True(t, strings.HasPrefix(gotSession, "mirasim_"))
@@ -57,11 +49,11 @@ func TestMirasimRelayMetadataSession(t *testing.T) {
 				require.Equal(t, tc.session, gotSession)
 			}
 			require.Equal(t, tc.agent, req.Header.Get("x-mirasim-agent"))
-			require.Equal(t, "user-sub-123", req.Header.Get("x-mirasim-account"))
+			require.Empty(t, req.Header.Get("x-mirasim-account"))
 			callID := req.Header.Get("x-mirasim-call")
 			_, err = uuid.Parse(callID)
 			require.NoError(t, err)
-			require.NoError(t, prepareMirasimRelayMetadata(req, ticket, []byte(tc.body)))
+			require.NoError(t, prepareMirasimRelayMetadata(req, []byte(tc.body)))
 			// 兜底会话首次已写入请求头，二次调用应读回同一值，保持跨调用稳定。
 			require.Equal(t, gotSession, req.Header.Get("x-mirasim-session"))
 			require.NotEqual(t, callID, req.Header.Get("x-mirasim-call"))
@@ -80,34 +72,36 @@ func TestMirasimRelayMetadataBeta(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, "https://relay.invalid/v1/messages", nil)
 			require.NoError(t, err)
 			req.Header["aNtHrOpIc-BeTa"] = tc.values
-			require.NoError(t, prepareMirasimRelayMetadata(req, "", nil))
+			require.NoError(t, prepareMirasimRelayMetadata(req, nil))
 			require.Equal(t, tc.want, req.Header.Get("anthropic-beta"))
 			require.NotContains(t, req.Header, "aNtHrOpIc-BeTa")
 		})
 	}
 	req, err := http.NewRequest(http.MethodGet, "https://relay.invalid/v1/limits", nil)
 	require.NoError(t, err)
-	require.NoError(t, prepareMirasimRelayMetadata(req, "", nil))
+	require.NoError(t, prepareMirasimRelayMetadata(req, nil))
 	require.Empty(t, req.Header)
 }
 
 // TestMirasimRelayMetadataAccountLocale 校验账号与语言字段的写入、缺省、残留清理，并确认不添加 turn。
 func TestMirasimRelayMetadataAccountLocale(t *testing.T) {
-	// 场景 1: 提供票据与 Accept-Language 时写入 account/locale，并覆盖入站残留的脏值。
+	// 场景 1: 保留客户端语言，清除并省略不属于 App 本地账号标识的 account。
 	req, err := http.NewRequest(http.MethodPost, "https://relay.invalid/v1/messages", strings.NewReader(`{}`))
 	require.NoError(t, err)
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
 	req.Header.Set("x-mirasim-account", "stale-account")
+	req.Header["X-MiRaSiM-AcCoUnT"] = []string{"stale-variant"}
 	req.Header.Set("x-mirasim-locale", "en-US")
-	require.NoError(t, prepareMirasimRelayMetadata(req, testMirasimJWT("account-42"), []byte(`{}`)))
-	require.Equal(t, "account-42", req.Header.Get("x-mirasim-account"))
+	require.NoError(t, prepareMirasimRelayMetadata(req, []byte(`{}`)))
+	require.Empty(t, req.Header.Get("x-mirasim-account"))
+	require.NotContains(t, req.Header, "X-MiRaSiM-AcCoUnT")
 	require.Equal(t, "zh-CN", req.Header.Get("x-mirasim-locale"))
 	require.Empty(t, req.Header.Get("x-mirasim-turn"))
 
-	// 场景 2: 无票据、无 Accept-Language 时不写入 account/locale（对齐 App “存在才发”）。
+	// 场景 2: 无 Accept-Language 时不写入 account/locale（对齐 App “存在才发”）。
 	req2, err := http.NewRequest(http.MethodPost, "https://relay.invalid/v1/messages", strings.NewReader(`{}`))
 	require.NoError(t, err)
-	require.NoError(t, prepareMirasimRelayMetadata(req2, "", []byte(`{}`)))
+	require.NoError(t, prepareMirasimRelayMetadata(req2, []byte(`{}`)))
 	require.Empty(t, req2.Header.Get("x-mirasim-account"))
 	require.Empty(t, req2.Header.Get("x-mirasim-locale"))
 	require.Empty(t, req2.Header.Get("x-mirasim-turn"))
@@ -138,6 +132,7 @@ func TestMirasimRelayMetadataSignedGateway(t *testing.T) {
 	require.Equal(t, "client-conversation", meta["x-mirasim-session"])
 	require.Equal(t, "claude", meta["x-mirasim-agent"])
 	require.NotEmpty(t, meta["x-mirasim-call"])
+	require.NotContains(t, meta, "x-mirasim-account")
 	require.NotEqual(t, "untrusted-device", meta[headerMirasimDevice])
 	seed, err := ParseEd25519Seed(account.GetMirasimPrivateKey())
 	require.NoError(t, err)

@@ -26,7 +26,7 @@ import (
 )
 
 // Mirasim 是 Mirasim 平台的端点与会话协议适配器。
-// 支持自适应协议分流（Claude 模型走 Anthropic Messages，其他走 Chat Completions），
+// 支持自适应协议分流（Claude 模型走 Anthropic Messages，其他默认走 Responses），
 // 原生设备票据换发与签名校验，以及 5h 窗口额度监控。
 
 const (
@@ -35,9 +35,8 @@ const (
 	// DefaultMirasimAuthBaseURL 是 Mirasim 默认鉴权服务地址。
 	DefaultMirasimAuthBaseURL = "https://auth.mirasim.ai"
 	// DefaultMirasimClientVersion 是 Mirasim 客户端默认版本号，对齐当前官方 App。
-	// 0.0.348 与 0.0.354 的中继元数据头逐字节一致，升版本只为与官方客户端保持同步，
-	// 避免中继后续按版本做准入时被判为 client_outdated。
-	DefaultMirasimClientVersion = "0.0.354"
+	// 0.0.383 的签名核心与当前嵌入的 WASM 一致，换票和推理请求使用同一版本。
+	DefaultMirasimClientVersion = "0.0.383"
 	// DefaultMirasimTestModel 是管理员测试连接时的回退模型。
 	DefaultMirasimTestModel = "claude-haiku-4-5-20251001"
 
@@ -102,9 +101,9 @@ func GetMirasimTicketManager() *MirasimTicketManager {
 }
 
 // DefaultMirasimModelIDs 返回 Mirasim 平台常见模型目录，供目录未同步时回退。
-// Claude 部分复用现有目录，GPT 包含对话与图片模型，供测试连接与模型同步使用。
+// Claude 部分复用现有目录，同时包含 GPT 对话、图片模型与 Kimi K3，供测试连接与模型同步使用。
 func DefaultMirasimModelIDs() []string {
-	ids := make([]string, 0, len(claude.DefaultModels)+7)
+	ids := make([]string, 0, len(claude.DefaultModels)+8)
 	for _, m := range claude.DefaultModels {
 		ids = append(ids, m.ID)
 	}
@@ -113,23 +112,26 @@ func DefaultMirasimModelIDs() []string {
 		"gpt-6-sol",
 		"gpt-5.6-sol",
 		"gpt-5.6-terra",
-		"gpt-image-2",
-		"gpt-image-2.5-flare",
-		"gpt-image-2.5-sunburst",
+		"kimi-k3",
 	)
-	return ids
+	return append(ids, DefaultMirasimImageModelIDs()...)
+}
+
+// DefaultMirasimImageModelIDs 返回本地生图入口支持的固定模型，中继对话目录可能不包含这些型号。
+func DefaultMirasimImageModelIDs() []string {
+	return []string{"gpt-image-2", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst"}
 }
 
 // MirasimProtocolRule 表示模型匹配模式与目标协议的映射规则。
 type MirasimProtocolRule struct {
 	// Pattern 模型名称通配表达式（支持末尾 * 匹配）
 	Pattern string `json:"pattern"`
-	// Protocol 目标协议（chat_completions 或 anthropic）
+	// Protocol 目标协议（chat_completions、anthropic 或 responses）
 	Protocol string `json:"protocol"`
 }
 
 // DefaultMirasimProtocolRules 返回 Mirasim 内置自适应分流路由表。
-// Claude 模型走 Anthropic Messages，其余（GPT/DeepSeek 等）走原生 OpenAI Responses 协议。
+// Claude 模型走 Anthropic Messages，其余（GPT/Kimi K3 等）默认走原生 OpenAI Responses 协议。
 // relay 对 gpt-* 仅提供 /v1/responses 端点（实测 chat_completions 返回 404 use /v1/responses）。
 func DefaultMirasimProtocolRules() []MirasimProtocolRule {
 	return []MirasimProtocolRule{
@@ -224,7 +226,7 @@ func parseMirasimProtocolRules(raw any) ([]MirasimProtocolRule, error) {
 		}
 		protocol = strings.TrimSpace(protocol)
 		if !isNativeMirasimProtocol(protocol) {
-			return nil, fmt.Errorf("protocol_rules[%d]: protocol must be chat_completions or anthropic", i)
+			return nil, fmt.Errorf("protocol_rules[%d]: 协议必须为 chat_completions、anthropic 或 responses", i)
 		}
 		rules = append(rules, MirasimProtocolRule{Pattern: pattern, Protocol: protocol})
 	}
@@ -869,7 +871,7 @@ func signAndSealMirasimRequest(ctx context.Context, req *http.Request, account *
 		}
 	}
 	req.Header.Set("Authorization", "Bearer "+ticket)
-	if err := prepareMirasimRelayMetadata(req, ticket, bodyBytes); err != nil {
+	if err := prepareMirasimRelayMetadata(req, bodyBytes); err != nil {
 		return err
 	}
 

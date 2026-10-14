@@ -2900,7 +2900,7 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 		return
 	}
 
-	// Mirasim 优先使用账号显式映射；未配置时与对外模型列表共用目录，避免测试弹窗遗漏新模型。
+	// Mirasim 显式映射保持原有测试入口；未配置时实时读取中继目录，失败直接返回错误。
 	if account.IsMirasim() {
 		mapping := account.GetModelMapping()
 		if len(mapping) > 0 {
@@ -2916,17 +2916,18 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 			response.Success(c, models)
 			return
 		}
-		defaultByID := make(map[string]claude.Model, len(claude.DefaultModels)+len(openai.DefaultModels))
-		for _, model := range claude.DefaultModels {
-			defaultByID[model.ID] = model
+		if h.accountTestService == nil {
+			response.InternalError(c, "账号模型查询服务未配置")
+			return
 		}
-		for _, model := range openai.DefaultModels {
-			defaultByID[model.ID] = claude.Model{ID: model.ID, Type: "model", DisplayName: model.DisplayName}
+		ids, err := h.accountTestService.FetchUpstreamSupportedModels(c.Request.Context(), account)
+		if err != nil {
+			respondUpstreamModelSyncError(c, accountID, err)
+			return
 		}
-		ids := service.DefaultMirasimModelIDs()
 		models := make([]claude.Model, 0, len(ids))
 		for _, id := range ids {
-			models = append(models, defaultByID[id])
+			models = append(models, claude.Model{ID: id, Type: "model", DisplayName: id})
 		}
 		response.Success(c, models)
 		return
@@ -3045,26 +3046,30 @@ func (h *AccountHandler) SyncUpstreamModels(c *gin.Context) {
 
 	catalog, err := h.accountTestService.SyncUpstreamModelCatalog(c.Request.Context(), account)
 	if err != nil {
-		var syncErr *service.UpstreamModelSyncError
-		if errors.As(err, &syncErr) {
-			switch syncErr.Kind {
-			case service.UpstreamModelSyncErrorConfiguration, service.UpstreamModelSyncErrorUnsupported:
-				response.BadRequest(c, syncErr.SafeMessage())
-			case service.UpstreamModelSyncErrorInternal:
-				response.InternalError(c, syncErr.SafeMessage())
-			default:
-				slog.Warn("sync_upstream_models_failed", "account_id", accountID, "kind", syncErr.Kind)
-				response.Error(c, http.StatusBadGateway, syncErr.SafeMessage())
-			}
-			return
-		}
-
-		slog.Warn("sync_upstream_models_failed", "account_id", accountID)
-		response.Error(c, http.StatusBadGateway, "Failed to sync upstream models from upstream")
+		respondUpstreamModelSyncError(c, accountID, err)
 		return
 	}
 
 	response.Success(c, catalog)
+}
+
+// respondUpstreamModelSyncError 统一返回目录查询错误，响应中不包含上游原始正文或凭据。
+func respondUpstreamModelSyncError(c *gin.Context, accountID int64, err error) {
+	var syncErr *service.UpstreamModelSyncError
+	if errors.As(err, &syncErr) {
+		switch syncErr.Kind {
+		case service.UpstreamModelSyncErrorConfiguration, service.UpstreamModelSyncErrorUnsupported:
+			response.BadRequest(c, syncErr.SafeMessage())
+		case service.UpstreamModelSyncErrorInternal:
+			response.InternalError(c, syncErr.SafeMessage())
+		default:
+			slog.Warn("sync_upstream_models_failed", "account_id", accountID, "kind", syncErr.Kind)
+			response.Error(c, http.StatusBadGateway, syncErr.SafeMessage())
+		}
+		return
+	}
+	slog.Warn("sync_upstream_models_failed", "account_id", accountID)
+	response.Error(c, http.StatusBadGateway, "Failed to sync upstream models from upstream")
 }
 
 // SyncUpstreamModelsPreview handles syncing live supported models using provided credentials (no account ID needed).

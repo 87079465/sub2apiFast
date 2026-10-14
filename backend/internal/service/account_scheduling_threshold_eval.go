@@ -362,6 +362,9 @@ func cnProviderThresholdCandidates(account *Account, provider string) []*account
 	if account == nil || len(account.Extra) == 0 {
 		return nil
 	}
+	if provider == PlatformMirasim {
+		return []*accountSchedulingThresholdCandidate{cnThresholdCandidate(account.Extra, provider, "30d")}
+	}
 	candidates := []*accountSchedulingThresholdCandidate{
 		cnThresholdCandidate(account.Extra, provider, "5h"),
 		cnThresholdCandidate(account.Extra, provider, "weekly"),
@@ -384,6 +387,9 @@ func cnThresholdCandidate(extra map[string]any, provider, window string) *accoun
 	case "monthly":
 		usedKey = cnExtraKey(provider, cnExtraSuffixMonthlyUsed)
 		resetKey = cnExtraKey(provider, cnExtraSuffixMonthlyReset)
+	case "30d":
+		usedKey = cnExtraKey(provider, "30d_used_percent")
+		resetKey = cnExtraKey(provider, "30d_reset_at")
 	default:
 		return nil
 	}

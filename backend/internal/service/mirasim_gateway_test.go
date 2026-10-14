@@ -192,3 +192,62 @@ func TestMirasimGateway_SystemCompatibility(t *testing.T) {
 		})
 	}
 }
+
+// TestMirasimGateway_ModelCatalog 验证目录查询使用设备签名和账号代理，且不受白名单或预置模型限制。
+func TestMirasimGateway_ModelCatalog(t *testing.T) {
+	for _, accountType := range []string{AccountTypeOAuth, AccountTypeAPIKey} {
+		t.Run(accountType, func(t *testing.T) {
+			account := newMirasimGatewayTestAccount(t)
+			account.Type = accountType
+			proxyAccount := newMirasimProxyTestAccount(t, account.GetCredential("base_url"))
+			account.ProxyID = proxyAccount.ProxyID
+			account.Proxy = proxyAccount.Proxy
+			upstream := &httpUpstreamRecorder{resp: &http.Response{
+				StatusCode: http.StatusOK,
+				Header: http.Header{"Content-Type": []string{"application/json"}},
+				Body: io.NopCloser(strings.NewReader(`{"data":[{"id":"kimi-k3"},{"id":"future-model"},{"id":"kimi-k3"},{"id":"gpt-image-2"}]}`)),
+			}}
+			svc := &AccountTestService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream}
+			catalog, err := svc.SyncUpstreamModelCatalog(context.Background(), account)
+			require.NoError(t, err)
+			require.Equal(t, []string{"future-model", "gpt-image-2", "gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "kimi-k3"}, catalog.Models)
+			require.Len(t, upstream.requests, 1)
+			require.Equal(t, http.MethodGet, upstream.lastReq.Method)
+			require.Equal(t, account.GetCredential("base_url")+"/v1/models", upstream.lastReq.URL.String())
+			require.Equal(t, account.Proxy.URL(), upstream.lastProxyURL)
+			requireMirasimGatewaySignature(t, account, upstream)
+			require.Equal(t, map[string]string{"client-alias": "claude-sonnet-5"}, account.GetModelMapping())
+		})
+	}
+}
+
+// TestMirasimGateway_ModelCatalogFailure 验证上游错误或无效目录会原样失败，不回退到账号映射或预置模型。
+func TestMirasimGateway_ModelCatalogFailure(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		status int
+		body string
+	}{
+		{name: "上游不可用", status: http.StatusServiceUnavailable, body: `{"error":"unavailable"}`},
+		{name: "端点不存在", status: http.StatusNotFound, body: `{}`},
+		{name: "非法响应", status: http.StatusOK, body: `not-json`},
+		{name: "空目录", status: http.StatusOK, body: `{"data":[]}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			account := newMirasimGatewayTestAccount(t)
+			upstream := &httpUpstreamRecorder{resp: &http.Response{
+				StatusCode: tc.status,
+				Header: make(http.Header),
+				Body: io.NopCloser(strings.NewReader(tc.body)),
+			}}
+			svc := &AccountTestService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream}
+			catalog, err := svc.SyncUpstreamModelCatalog(context.Background(), account)
+			require.Error(t, err)
+			require.Nil(t, catalog)
+			var syncErr *UpstreamModelSyncError
+			require.ErrorAs(t, err, &syncErr)
+			require.Equal(t, UpstreamModelSyncErrorUpstream, syncErr.Kind)
+			require.Len(t, upstream.requests, 1)
+		})
+	}
+}

@@ -175,6 +175,13 @@ func TestCNQuotaExtraUpdates(t *testing.T) {
 	require.Equal(t, 60.0, updates["kimi_weekly_used_percent"])
 	require.Equal(t, "2026-08-18T00:00:00Z", updates["kimi_weekly_reset_at"])
 	require.Equal(t, now.Format(time.RFC3339), updates["kimi_usage_updated_at"])
+
+	// 新一期尚未开始时，必须覆盖旧到期时间，不能沿用上一期的快照。
+	for _, reset := range []string{"2026-11-11T00:00:00Z", ""} {
+		updates = cnQuotaExtraUpdates(PlatformMirasim, []CNQuotaTier{{Window: "30d", UsedPercent: 40, ResetAt: reset}}, now)
+		require.Equal(t, 40.0, updates["mirasim_30d_used_percent"])
+		require.Equal(t, reset, updates["mirasim_30d_reset_at"])
+	}
 }
 
 func TestParseOpenCodeGoUsageTiers(t *testing.T) {

@@ -24,7 +24,7 @@ vi.mock('vue-i18n', async () => {
   return {
     ...actual,
     useI18n: () => ({
-      t: (key: string, params?: Record<string, string>) => key === 'common.copy' ? '复制' : key === 'admin.accounts.modelMappingConflict' ? `Model mapping conflict: ${params?.from} → ${params?.to}` : key
+      t: (key: string, params?: Record<string, string>) => key === 'common.copy' ? '复制' : key === 'admin.accounts.syncUpstreamModelsError' ? `同步失败：${params?.message}` : key === 'admin.accounts.modelMappingConflict' ? `Model mapping conflict: ${params?.from} → ${params?.to}` : key
     })
   }
 })
@@ -267,5 +267,48 @@ describe('ModelWhitelistSelector', () => {
 
     expect(syncButton).toBeDefined()
     expect(syncButton?.exists()).toBe(true)
+  })
+
+  it('Mirasim 自动显示上游新模型，加载目录不修改白名单', async () => {
+    syncUpstreamModels.mockResolvedValue({ models: ['kimi-k3', 'future-model'] })
+    const wrapper = mountSelector({ platform: 'mirasim', accountId: 44, modelValue: ['saved-model'] })
+    await flushPromises()
+
+    expect(syncUpstreamModels).toHaveBeenCalledWith(44)
+    expect(wrapper.findAll('[data-testid="model-option"]')).toHaveLength(2)
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+    await findModelRow(wrapper, 'future-model').get('[data-testid="select-model"]').trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toEqual([[['saved-model', 'future-model']]])
+  })
+
+  it('Mirasim 刷新失败显示上游错误，不把旧目录或预置模型当作成功结果', async () => {
+    syncUpstreamModels.mockResolvedValueOnce({ models: ['future-model'] })
+    const wrapper = mountSelector({ platform: 'mirasim', accountId: 44, modelValue: ['kimi-k3'] })
+    await flushPromises()
+    syncUpstreamModels.mockRejectedValueOnce({ message: 'HTTP 503' })
+    await wrapper.get('[data-testid="refresh-model-catalog"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[role="alert"]').text()).toBe('同步失败：HTTP 503')
+    expect(wrapper.findAll('[data-testid="model-option"]')).toHaveLength(0)
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+    expect(wrapper.props('modelValue')).toEqual(['kimi-k3'])
+    expect(wrapper.get('[data-testid="refresh-model-catalog"]').attributes('disabled')).toBeUndefined()
+  })
+
+  it('切换 Mirasim 账号后丢弃前一个账号迟到的目录响应', async () => {
+    let finishFirst!: (value: { models: string[] }) => void
+    syncUpstreamModels.mockImplementationOnce(() => new Promise(resolve => { finishFirst = resolve }))
+    const wrapper = mountSelector({ platform: 'mirasim', accountId: 44 })
+    syncUpstreamModels.mockResolvedValueOnce({ models: ['second-account-model'] })
+    await wrapper.setProps({ accountId: 45 })
+    await flushPromises()
+    finishFirst({ models: ['first-account-model'] })
+    await flushPromises()
+
+    expect(wrapper.findAll('[data-testid="model-option"]')).toHaveLength(1)
+    expect(findModelRow(wrapper, 'second-account-model').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('first-account-model')
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 })

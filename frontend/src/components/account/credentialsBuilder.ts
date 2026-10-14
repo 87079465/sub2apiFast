@@ -367,7 +367,7 @@ export function isMirasimPlatform(platform: string): boolean {
   return platform === 'mirasim'
 }
 
-export type MirasimProtocol = 'chat_completions' | 'anthropic'
+export type MirasimProtocol = 'chat_completions' | 'anthropic' | 'responses'
 
 export interface MirasimProtocolRule {
   pattern: string
@@ -376,7 +376,7 @@ export interface MirasimProtocolRule {
 
 export const DEFAULT_MIRASIM_PROTOCOL_RULES: MirasimProtocolRule[] = [
   { pattern: 'claude-*', protocol: 'anthropic' },
-  { pattern: '*', protocol: 'chat_completions' }
+  { pattern: '*', protocol: 'responses' }
 ]
 
 export function cloneMirasimProtocolRules(
@@ -386,7 +386,7 @@ export function cloneMirasimProtocolRules(
 }
 
 function isNativeMirasimProtocol(value: unknown): value is MirasimProtocol {
-  return value === 'chat_completions' || value === 'anthropic'
+  return value === 'chat_completions' || value === 'anthropic' || value === 'responses'
 }
 
 export function parseMirasimProtocolRules(raw: unknown): MirasimProtocolRule[] | null {

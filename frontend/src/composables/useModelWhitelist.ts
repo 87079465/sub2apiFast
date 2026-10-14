@@ -487,6 +487,7 @@ export function getModelsByPlatform(platform: string): string[] {
       'gpt-image-2.5-sunburst',
       'gpt-5.5',
       'gemini-3-flash',
+      'kimi-k3',
       'deepseek-v3'
     ]
     case 'doubao': return doubaoModels

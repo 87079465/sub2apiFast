@@ -1053,6 +1053,30 @@ describe('EditAccountModal', () => {
     })
   })
 
+  it('Mirasim OAuth 显示模型设置并保存白名单，保留已有映射与凭据', async () => {
+    const account = buildGrokOAuthAccount()
+    account.platform = 'mirasim'
+    account.credentials = {
+      issuer_token: 'test-issuer',
+      private_key: 'test-key',
+      model_mapping: { 'kimi-k3': 'kimi-k3', 'k3': 'kimi-k3' }
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    checkMixedChannelRiskMock.mockReset().mockResolvedValue({ has_risk: false })
+    const wrapper = mountModal(account)
+    const selector = wrapper.getComponent(ModelWhitelistSelectorStub)
+    expect(selector.props('modelValue')).toEqual(['kimi-k3'])
+    expect(selector.props('modelMappings')).toEqual([{ from: 'k3', to: 'kimi-k3' }])
+    selector.vm.$emit('update:modelValue', ['kimi-k3', 'future-model'])
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0]?.[1]?.credentials).toMatchObject({
+      issuer_token: 'test-issuer',
+      private_key: 'test-key',
+      model_mapping: { 'kimi-k3': 'kimi-k3', 'future-model': 'future-model', 'k3': 'kimi-k3' }
+    })
+  })
+
   it('uses the official xAI base URL when a Grok API-key account omits base_url', async () => {
     const account = buildGrokAPIKeyAccount()
     updateAccountMock.mockReset()

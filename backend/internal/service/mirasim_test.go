@@ -59,7 +59,7 @@ func TestParseMirasimUsageTiers(t *testing.T) {
 		"paid": true,
 		"windows": [
 			{
-				"name": "5h",
+				"name": "30d",
 				"budget": 100,
 				"used": 45.5,
 				"reset_at": 1726200000
@@ -69,7 +69,7 @@ func TestParseMirasimUsageTiers(t *testing.T) {
 
 	tiers := parseMirasimUsageTiers(respJSON)
 	require.Len(t, tiers, 1)
-	require.Equal(t, "5h", tiers[0].Window)
+	require.Equal(t, "30d", tiers[0].Window)
 	require.InDelta(t, 45.5, tiers[0].UsedPercent, 0.001)
 	require.NotEmpty(t, tiers[0].ResetAt)
 }

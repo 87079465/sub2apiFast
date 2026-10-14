@@ -191,8 +191,8 @@ func newUpstreamModelSyncInternalError(message string, err error) error {
 	return &UpstreamModelSyncError{Kind: UpstreamModelSyncErrorInternal, Message: message, Err: err}
 }
 
-// FetchUpstreamSupportedModels fetches only live model IDs. The admin sync path
-// uses SyncUpstreamModelCatalog so capability metadata can also be persisted.
+// FetchUpstreamSupportedModels 获取上游模型 ID，Mirasim 额外包含本地生图入口支持的固定型号。
+// 管理端同步通过 SyncUpstreamModelCatalog 获取目录及相应能力元数据。
 func (s *AccountTestService) FetchUpstreamSupportedModels(ctx context.Context, account *Account) ([]string, error) {
 	models, _, err := s.fetchUpstreamModelList(ctx, account)
 	return models, err
@@ -208,6 +208,14 @@ func (s *AccountTestService) FetchUpstreamSupportedModels(ctx context.Context, a
 // snapshot. When no model is complete, the existing account snapshot is left
 // untouched.
 func (s *AccountTestService) SyncUpstreamModelCatalog(ctx context.Context, account *Account) (*UpstreamModelCatalog, error) {
+	// Mirasim 使用已签名的中继目录，并补齐本地支持的生图型号；查询失败仍直接返回错误。
+	if account != nil && account.IsMirasim() {
+		models, _, err := s.fetchUpstreamModelList(ctx, account)
+		if err != nil {
+			return nil, err
+		}
+		return &UpstreamModelCatalog{Models: models}, nil
+	}
 	models, body, err := s.fetchUpstreamModelList(ctx, account)
 	liveListAvailable := err == nil
 	if err != nil {
@@ -754,6 +762,9 @@ func (s *AccountTestService) fetchUpstreamModelList(ctx context.Context, account
 	defer func() { _ = resp.Body.Close() }()
 
 	bodyLimit := resolveModelsListReadLimit(s.cfg)
+	if account.IsMirasim() {
+		observeMirasimResponse(account, req, resp)
+	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, bodyLimit+1))
 	if err != nil {
 		return nil, nil, newUpstreamModelSyncUpstreamError("Failed to read upstream model list", err)
@@ -782,12 +793,18 @@ func (s *AccountTestService) fetchUpstreamModelList(ctx context.Context, account
 	if len(models) == 0 {
 		return nil, nil, newUpstreamModelSyncUpstreamError("Upstream returned no supported models", nil)
 	}
+	// 仅在目录成功获取后补充固定生图型号；与上游已有型号合并去重。
+	if account.IsMirasim() {
+		models = dedupeAndSortModelIDs(append(models, DefaultMirasimImageModelIDs()...))
+	}
 
 	return models, body, nil
 }
 
 func (s *AccountTestService) buildUpstreamModelsRequest(ctx context.Context, account *Account) (*http.Request, error) {
 	switch {
+	case account.IsMirasim():
+		return s.buildMirasimUpstreamModelsRequest(ctx, account)
 	case account.Platform == PlatformAntigravity:
 		return s.buildAntigravityAPIKeyModelsRequest(ctx, account)
 	case account.IsGrok():
@@ -805,6 +822,27 @@ func (s *AccountTestService) buildUpstreamModelsRequest(ctx context.Context, acc
 			fmt.Sprintf("Unsupported platform for upstream model sync: %s", account.Platform), nil,
 		)
 	}
+}
+
+// buildMirasimUpstreamModelsRequest 复用设备换票与签名，请求账号所配置中继的实时模型目录。
+func (s *AccountTestService) buildMirasimUpstreamModelsRequest(ctx context.Context, account *Account) (*http.Request, error) {
+	if account.Type != AccountTypeOAuth && account.Type != AccountTypeAPIKey {
+		return nil, newUpstreamModelSyncUnsupportedError("Mirasim 模型查询仅支持 OAuth 或 API Key 账号", nil)
+	}
+	baseURL, err := s.validateUpstreamBaseURL(account.GetOpenAIBaseURL())
+	if err != nil {
+		return nil, newUpstreamModelSyncConfigError("Mirasim 中继地址无效", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buildV1ModelsURL(baseURL), nil)
+	if err != nil {
+		return nil, newUpstreamModelSyncConfigError("Mirasim 模型目录地址无效", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	account.ApplyHeaderOverrides(req.Header)
+	if err := signMirasimUpstreamRequest(req, account); err != nil {
+		return nil, newUpstreamModelSyncUpstreamError("Mirasim 模型目录换票或签名失败，请检查账号凭据与代理", err)
+	}
+	return req, nil
 }
 
 func (s *AccountTestService) buildGrokUpstreamModelsRequest(ctx context.Context, account *Account) (*http.Request, error) {

@@ -28,12 +28,15 @@
           :placeholder="t('admin.accounts.mirasim.protocolRules.patternPlaceholder')"
           :data-testid="`mirasim-protocol-pattern-${index}`"
         />
-        <!-- 协议选择：Chat Completions 或 Anthropic -->
+        <!-- 协议选择：Responses、Chat Completions 或 Anthropic -->
         <select
           v-model="row.protocol"
           class="input w-44 shrink-0"
           :data-testid="`mirasim-protocol-select-${index}`"
         >
+          <option value="responses">
+            {{ t('admin.accounts.cnProviders.apiProtocol.responses') }}
+          </option>
           <option value="chat_completions">
             {{ t('admin.accounts.cnProviders.apiProtocol.chatCompletions') }}
           </option>
@@ -77,7 +80,7 @@
 <script setup lang="ts">
 /**
  * Mirasim 模型协议自适应分流规则编辑器组件
- * 允许用户针对 Mirasim 账号配置不同模型通配规则映射到 chat_completions 或 anthropic 协议
+ * 允许用户针对 Mirasim 账号配置不同模型通配规则映射到 responses、chat_completions 或 anthropic 协议
  */
 import { useI18n } from 'vue-i18n'
 import Icon from '@/components/icons/Icon.vue'
@@ -99,10 +102,10 @@ const { t } = useI18n()
 const getRowKey = createStableObjectKeyResolver<MirasimProtocolRule>('mirasim-protocol-rule')
 
 /**
- * 添加一条默认的 chat_completions 规则
+ * 添加一条默认的 responses 规则
  */
 const addRow = () => {
-  emit('update:rows', [...props.rows, { pattern: '', protocol: 'chat_completions' }])
+  emit('update:rows', [...props.rows, { pattern: '', protocol: 'responses' }])
 }
 
 /**
@@ -113,7 +116,7 @@ const removeRow = (index: number) => {
 }
 
 /**
- * 恢复为默认的 Mirasim 协议规则（claude-* -> anthropic, * -> chat_completions）
+ * 恢复为默认的 Mirasim 协议规则（claude-* -> anthropic, * -> responses）
  */
 const restoreDefaults = () => {
   emit('update:rows', cloneMirasimProtocolRules())
