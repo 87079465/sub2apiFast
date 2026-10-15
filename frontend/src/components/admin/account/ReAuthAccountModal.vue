@@ -130,14 +130,14 @@
         :show-help="isAnthropic"
         :show-proxy-warning="isAnthropic"
         :show-cookie-option="isAnthropic"
-        :show-refresh-token-option="isOpenAI || isAntigravity || isGrok"
+        :show-refresh-token-option="isOpenAI || isAntigravity || isGrok || isMirasim || isOfficeCopilot"
         :show-sso-option="isGrok"
         :show-email-code-option="isMirasim"
         :show-local-app-option="isMirasim"
         :show-email-password-option="false"
         :allow-multiple="false"
         :method-label="t('admin.accounts.inputMethod')"
-        :platform="isOpenAI ? 'openai' : isGemini ? 'gemini' : isAntigravity ? 'antigravity' : isGrok ? 'grok' : isMirasim ? 'mirasim' : 'anthropic'"
+        :platform="isOpenAI ? 'openai' : isGemini ? 'gemini' : isAntigravity ? 'antigravity' : isGrok ? 'grok' : isMirasim ? 'mirasim' : isOfficeCopilot ? 'office_copilot' : 'anthropic'"
         :show-project-id="isGemini && geminiOAuthType === 'code_assist'"
         :initial-input-method="grokInitialInputMethod"
         @generate-url="handleGenerateUrl"
@@ -209,6 +209,7 @@ import { useGeminiOAuth } from '@/composables/useGeminiOAuth'
 import { useAntigravityOAuth } from '@/composables/useAntigravityOAuth'
 import { useGrokOAuth } from '@/composables/useGrokOAuth'
 import { useMirasimOAuth } from '@/composables/useMirasimOAuth'
+import { useOfficeCopilotOAuth } from '@/composables/useOfficeCopilotOAuth'
 import type { Account } from '@/types'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
@@ -247,6 +248,7 @@ const geminiOAuth = useGeminiOAuth()
 const antigravityOAuth = useAntigravityOAuth()
 const grokOAuth = useGrokOAuth()
 const mirasimOAuth = useMirasimOAuth()
+const officeCopilotOAuth = useOfficeCopilotOAuth()
 
 // Refs
 const oauthFlowRef = ref<OAuthFlowExposed | null>(null)
@@ -263,6 +265,7 @@ const isAnthropic = computed(() => props.account?.platform === 'anthropic')
 const isAntigravity = computed(() => props.account?.platform === 'antigravity')
 const isGrok = computed(() => props.account?.platform === 'grok')
 const isMirasim = computed(() => props.account?.platform === 'mirasim')
+const isOfficeCopilot = computed(() => props.account?.platform === 'office_copilot')
 
 /**
  * Grok reauth default tab (password auth is hidden):
@@ -286,6 +289,7 @@ const currentAuthUrl = computed(() => {
   if (isAntigravity.value) return antigravityOAuth.authUrl.value
   if (isGrok.value) return grokOAuth.authUrl.value
   if (isMirasim.value) return mirasimOAuth.authUrl.value
+  if (isOfficeCopilot.value) return officeCopilotOAuth.authUrl.value
   return claudeOAuth.authUrl.value
 })
 const currentSessionId = computed(() => {
@@ -294,6 +298,7 @@ const currentSessionId = computed(() => {
   if (isAntigravity.value) return antigravityOAuth.sessionId.value
   if (isGrok.value) return grokOAuth.sessionId.value
   if (isMirasim.value) return mirasimOAuth.sessionId.value
+  if (isOfficeCopilot.value) return officeCopilotOAuth.sessionId.value
   return claudeOAuth.sessionId.value
 })
 const currentLoading = computed(() => {
@@ -302,6 +307,7 @@ const currentLoading = computed(() => {
   if (isAntigravity.value) return antigravityOAuth.loading.value
   if (isGrok.value) return grokOAuth.loading.value
   if (isMirasim.value) return mirasimOAuth.loading.value
+  if (isOfficeCopilot.value) return officeCopilotOAuth.loading.value
   return claudeOAuth.loading.value
 })
 const currentError = computed(() => {
@@ -310,6 +316,7 @@ const currentError = computed(() => {
   if (isAntigravity.value) return antigravityOAuth.error.value
   if (isGrok.value) return grokOAuth.error.value
   if (isMirasim.value) return mirasimOAuth.error.value
+  if (isOfficeCopilot.value) return officeCopilotOAuth.error.value
   return claudeOAuth.error.value
 })
 
@@ -332,6 +339,7 @@ const isManualInputMethod = computed(() => {
     isAntigravity.value ||
     isGrok.value ||
     isMirasim.value ||
+    isOfficeCopilot.value ||
     method === 'manual'
   )
 })
@@ -340,6 +348,9 @@ const canExchangeCode = computed(() => {
   const authCode = oauthFlowRef.value?.authCode || ''
   const sessionId = currentSessionId.value
   const loading = currentLoading.value
+  if (isOfficeCopilot.value) {
+    return !!sessionId && !loading
+  }
   return authCode.trim() && sessionId && !loading
 })
 
@@ -380,6 +391,7 @@ const resetState = () => {
   antigravityOAuth.resetState()
   grokOAuth.resetState()
   mirasimOAuth.resetState()
+  officeCopilotOAuth.resetState()
   oauthFlowRef.value?.reset()
 }
 
@@ -407,6 +419,8 @@ const handleGenerateUrl = async () => {
       props.account.proxy_id,
       oauthFlowRef.value?.mirasimProvider || 'github'
     )
+  } else if (isOfficeCopilot.value) {
+    await officeCopilotOAuth.generateAuthUrl(props.account.proxy_id)
   } else {
     await claudeOAuth.generateAuthUrl(addMethod.value, props.account.proxy_id)
   }
@@ -414,6 +428,26 @@ const handleGenerateUrl = async () => {
 
 const handleExchangeCode = async () => {
   if (!props.account) return
+
+  if (isOfficeCopilot.value) {
+    const tokenInfo = await officeCopilotOAuth.exchangeDeviceCode(props.account.proxy_id)
+    if (!tokenInfo) return
+    const updatedAccount = await adminAPI.accounts.applyOAuthCredentials(props.account.id, {
+      type: 'oauth',
+      credentials: {
+        access_token: tokenInfo.access_token,
+        refresh_token: tokenInfo.refresh_token,
+        client_id: tokenInfo.client_id,
+        expires_in: tokenInfo.expires_in,
+        expires_at: tokenInfo.expires_at,
+        scenario: tokenInfo.scenario
+      }
+    })
+    appStore.showSuccess(t('admin.accounts.reAuthorizedSuccess'))
+    emit('reauthorized', updatedAccount)
+    handleClose()
+    return
+  }
 
   const authCode = oauthFlowRef.value?.authCode || ''
   if (!authCode.trim()) return
@@ -690,6 +724,25 @@ const handleValidateRefreshToken = async (refreshTokenInput: string) => {
   }
   if (isMirasim.value) {
     await handleMirasimValidateRT(refreshTokenInput)
+    return
+  }
+  if (isOfficeCopilot.value) {
+    const tokenInfo = await officeCopilotOAuth.validateRefreshToken(refreshTokenInput.trim(), props.account.proxy_id)
+    if (!tokenInfo) return
+    const updatedAccount = await adminAPI.accounts.applyOAuthCredentials(props.account.id, {
+      type: 'oauth',
+      credentials: {
+        access_token: tokenInfo.access_token,
+        refresh_token: tokenInfo.refresh_token || refreshTokenInput.trim(),
+        client_id: tokenInfo.client_id,
+        expires_in: tokenInfo.expires_in,
+        expires_at: tokenInfo.expires_at,
+        scenario: tokenInfo.scenario
+      }
+    })
+    appStore.showSuccess(t('admin.accounts.reAuthorizedSuccess'))
+    emit('reauthorized', updatedAccount)
+    handleClose()
     return
   }
 

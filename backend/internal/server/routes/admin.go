@@ -64,6 +64,9 @@ func RegisterAdminRoutes(
 		// Mirasim OAuth
 		registerMirasimOAuthRoutes(admin, h)
 
+		// Office Copilot OAuth
+		registerOfficeCopilotOAuthRoutes(admin, h)
+
 		// 国产供应商（kimi/zhipu/deepseek）额度与余额
 		registerCNProviderRoutes(admin, h)
 
@@ -517,6 +520,15 @@ func registerMirasimOAuthRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		mirasim.POST("/oauth/verify-code", h.Admin.MirasimOAuth.VerifyEmailCode)
 		mirasim.POST("/oauth/refresh-token", h.Admin.MirasimOAuth.RefreshToken)
 		mirasim.POST("/oauth/import-local", h.Admin.MirasimOAuth.ImportLocal)
+	}
+}
+
+// registerOfficeCopilotOAuthRoutes 注册 Office Copilot 平台的 OAuth 设备码授权端点。
+func registerOfficeCopilotOAuthRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	oc := admin.Group("/office-copilot")
+	{
+		oc.POST("/oauth/device-code", h.Admin.Account.GenerateOfficeCopilotDeviceCode)
+		oc.POST("/oauth/exchange-token", h.Admin.Account.ExchangeOfficeCopilotToken)
 	}
 }
 

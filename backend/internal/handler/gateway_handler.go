@@ -1192,6 +1192,10 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 	}
 
 	// Fallback to default models
+	if platform == service.PlatformOfficeCopilot {
+		writeModelsList(c, platform, defaultModelIDsForPlatform(platform))
+		return
+	}
 	if platform == service.PlatformOpenAI {
 		writeModelsListResponse(c, openai.DefaultModels)
 		return
@@ -1479,6 +1483,8 @@ func defaultModelIDsForPlatform(platform string) []string {
 		return service.DefaultOpenCodeGoModelIDs()
 	case service.PlatformMirasim:
 		return service.DefaultMirasimModelIDs()
+	case service.PlatformOfficeCopilot:
+		return []string{"claude-opus-5-5", "claude-sonnet-5", "gpt-6-sol", "copilot-auto"}
 	case service.PlatformComposite:
 		ids := make([]string, 0)
 		seen := make(map[string]struct{})

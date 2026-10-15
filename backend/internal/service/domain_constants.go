@@ -50,6 +50,7 @@ const (
 	PlatformMiniMax    = domain.PlatformMiniMax
 	PlatformOpenCodeGo = domain.PlatformOpenCodeGo
 	PlatformMirasim    = domain.PlatformMirasim
+	PlatformOfficeCopilot = domain.PlatformOfficeCopilot
 	PlatformComposite  = domain.PlatformComposite
 	// PlatformKiro is retained for unsupported-platform threshold tests and legacy
 	// account rows. Scheduling-threshold evaluation never pauses kiro accounts.
@@ -123,6 +124,11 @@ func IsMirasim(platform string) bool {
 	return platform == PlatformMirasim
 }
 
+// IsOfficeCopilot 报告 platform 是否为 Office Copilot 网关。
+func IsOfficeCopilot(platform string) bool {
+	return platform == PlatformOfficeCopilot
+}
+
 // IsMultiProtocolAPIKeyProvider 报告 platform 是否为多协议 API Key 网关
 // （国产供应商 + OpenCode + Mirasim）：走 OpenAI 网关、支持 adaptive 协议分流。
 func IsMultiProtocolAPIKeyProvider(platform string) bool {
@@ -144,6 +150,7 @@ var AllowedQuotaPlatforms = []string{
 	PlatformMiniMax,
 	PlatformOpenCodeGo,
 	PlatformMirasim,
+	PlatformOfficeCopilot,
 }
 
 // AllowedSchedulingThresholdPlatforms 是允许设置账号自动停调阈值的平台列表。

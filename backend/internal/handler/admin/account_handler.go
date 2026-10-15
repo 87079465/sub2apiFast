@@ -2900,6 +2900,17 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 		return
 	}
 
+	// Handle Office Copilot accounts
+	if account.IsOfficeCopilot() {
+		response.Success(c, []claude.Model{
+			{ID: "claude-opus-5-5", Type: "model", DisplayName: "Claude Opus 5.5 (Word Copilot)"},
+			{ID: "claude-sonnet-5", Type: "model", DisplayName: "Claude Sonnet 5 (Word Copilot)"},
+			{ID: "gpt-6-sol", Type: "model", DisplayName: "GPT-6 Sol (Word Copilot)"},
+			{ID: "copilot-auto", Type: "model", DisplayName: "Copilot Auto"},
+		})
+		return
+	}
+
 	// Mirasim 显式映射保持原有测试入口；未配置时实时读取中继目录，失败直接返回错误。
 	if account.IsMirasim() {
 		mapping := account.GetModelMapping()

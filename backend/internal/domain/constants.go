@@ -33,6 +33,8 @@ const (
 	PlatformOpenCodeGo = "opencode_go"
 	// PlatformMirasim 是 Mirasim 平台（客户端中继网关，支持 WASM 设备凭据与 5h 窗口配额）。
 	PlatformMirasim = "mirasim"
+	// PlatformOfficeCopilot 是 Microsoft Office Copilot 平台（Substrate / Sydney 网关）。
+	PlatformOfficeCopilot = "office_copilot"
 	PlatformComposite  = "composite"
 )
 

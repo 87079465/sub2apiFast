@@ -1269,6 +1269,7 @@ function generateRoutedCodexFiles(
     minimax: 'MiniMax-M3',
     opencode_go: 'glm-5.3',
     mirasim: 'claude-opus-5',
+    office_copilot: 'claude-opus-5-5',
     composite: 'gpt-5.5'
   }
   const preferredModel = preferredModels[platform] || ''
@@ -1285,6 +1286,7 @@ function generateRoutedCodexFiles(
     minimax: 'MiniMax',
     opencode_go: 'OpenCode',
     mirasim: 'Mirasim',
+    office_copilot: 'Office Copilot',
     composite: 'Composite'
   }
   const label = labels[platform]

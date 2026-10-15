@@ -1231,6 +1231,7 @@ const getOAuthKey = (key: string) => {
   if (props.platform === 'antigravity') return `admin.accounts.oauth.antigravity.${key}`
   if (props.platform === 'grok') return `admin.accounts.oauth.grok.${key}`
   if (props.platform === 'mirasim') return `admin.accounts.oauth.mirasim.${key}`
+  if (props.platform === 'office_copilot') return `admin.accounts.oauth.office_copilot.${key}`
   return `admin.accounts.oauth.${key}`
 }
 

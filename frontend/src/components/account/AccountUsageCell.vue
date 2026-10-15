@@ -1,8 +1,15 @@
 <template>
   <div ref="rootRef" v-if="showUsageWindows">
+    <OfficeCopilotUsageCell
+      v-if="account.platform === 'office_copilot'"
+      :snapshot="officeSnapshot"
+      :loading="loading"
+      :error="error"
+      @refresh="refreshOfficeSnapshot"
+    />
     <!-- Anthropic OAuth and Setup Token accounts: fetch real usage data -->
     <template
-      v-if="
+      v-else-if="
         account.platform === 'anthropic' &&
         (account.type === 'oauth' || account.type === 'setup-token')
       "
@@ -677,11 +684,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
-import type { Account, AccountUsageInfo, GeminiCredentials, WindowStats } from '@/types'
+import type { Account, AccountUsageInfo, OfficeCopilotQuotaSnapshot, GeminiCredentials, WindowStats } from '@/types'
 import { buildOpenAIUsageRefreshKey } from '@/utils/accountUsageRefresh'
 import { enqueueUsageRequest } from '@/utils/usageLoadQueue'
 import { formatCompactNumber } from '@/utils/format'
 import UsageProgressBar from './UsageProgressBar.vue'
+import OfficeCopilotUsageCell from './OfficeCopilotUsageCell.vue'
 import AccountQuotaInfo from './AccountQuotaInfo.vue'
 import ClaudeResetCreditsCell from './ClaudeResetCreditsCell.vue'
 import OpenAIQuotaResetCell from './OpenAIQuotaResetCell.vue'
@@ -733,6 +741,35 @@ const loading = ref(false)
 const activeQueryLoading = ref(false)
 const error = ref<string | null>(null)
 const usageInfo = ref<AccountUsageInfo | null>(null)
+// The account payload already contains the passive snapshot. Reading that
+// payload also supports older servers without invoking their OAuth usage probe.
+const officeSnapshot = ref<OfficeCopilotQuotaSnapshot | null>(null)
+const readOfficeSnapshot = (account: Account) => {
+  const raw = account.extra?.office_copilot_usage
+  return raw && typeof raw === 'object' && 'observed_at' in raw
+    ? raw as OfficeCopilotQuotaSnapshot : null
+}
+watch(() => [props.account.id, props.account.extra?.office_copilot_usage], () => {
+  officeSnapshot.value = readOfficeSnapshot(props.account)
+}, { immediate: true })
+
+const refreshOfficeSnapshot = async () => {
+  if (loading.value) return
+  const accountId = props.account.id
+  loading.value = true
+  error.value = null
+  try {
+    const account = await adminAPI.accounts.getById(accountId)
+    if (!unmounted.value && props.account.id === accountId) {
+      officeSnapshot.value = readOfficeSnapshot(account)
+      emit('account-updated', account)
+    }
+  } catch {
+    if (!unmounted.value && props.account.id === accountId) error.value = t('common.error')
+  } finally {
+    if (!unmounted.value) loading.value = false
+  }
+}
 watch(usageInfo, (usage) => {
   if (usage) emit('usage-loaded', usage)
 })

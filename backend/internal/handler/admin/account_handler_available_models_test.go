@@ -526,3 +526,22 @@ func TestAccountHandlerSyncUpstreamModels_MetadataEnrichmentFailureReturnsWarnin
 	require.Len(t, resp.Data.Warnings, 1)
 	require.Equal(t, "upstream_model_metadata_incomplete", resp.Data.Warnings[0].Code)
 }
+
+func TestAccountHandlerGetAvailableModels_OfficeCopilot(t *testing.T) {
+	svc := &availableModelsAdminService{stubAdminService: newStubAdminService(), account: service.Account{ID: 63, Platform: service.PlatformOfficeCopilot, Type: service.AccountTypeOAuth}}
+	router := setupAvailableModelsRouter(svc)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/admin/accounts/63/models", nil))
+	require.Equal(t, http.StatusOK, rec.Code)
+	var got struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
+	var ids []string
+	for _, m := range got.Data {
+		ids = append(ids, m.ID)
+	}
+	require.Equal(t, []string{"claude-opus-5-5", "claude-sonnet-5", "gpt-6-sol", "copilot-auto"}, ids)
+}

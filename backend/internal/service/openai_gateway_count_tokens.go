@@ -12,6 +12,7 @@ import (
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/apicompat"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/office_copilot"
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 	"github.com/tiktoken-go/tokenizer"
@@ -152,7 +153,7 @@ func prepareNativeOpenAIInputTokensCountRequest(body []byte, account *Account) (
 // shouldEstimateOpenAIInputTokensLocally 根据账号平台和端点判断是否本地估算；参数为账号，返回是否跳过上游计数请求。
 // Mirasim 凭据不适用于 OpenAI 官方计数端点，避免错误的 401 触发账号冷却。
 func shouldEstimateOpenAIInputTokensLocally(account *Account) bool {
-	if account == nil || account.IsGrok() || account.IsCNProvider() || account.IsMirasim() || account.Type == AccountTypeUpstream {
+	if account == nil || account.IsGrok() || account.IsCNProvider() || account.IsMirasim() || account.IsOfficeCopilot() || account.Type == AccountTypeUpstream {
 		return true
 	}
 	if account.Type != AccountTypeAPIKey {
@@ -264,6 +265,21 @@ func (s *OpenAIGatewayService) ForwardCountTokensAsAnthropic(
 	if account == nil {
 		writeAnthropicCountTokensError(c, http.StatusServiceUnavailable, "api_error", "No available OpenAI accounts")
 		return fmt.Errorf("count_tokens: missing account")
+	}
+	if account.IsOfficeCopilot() {
+		if strings.TrimSpace(gjson.GetBytes(body, "model").String()) == "" {
+			writeAnthropicCountTokensError(c, http.StatusBadRequest, "invalid_request_error", "model is required")
+			return fmt.Errorf("count_tokens: model is required")
+		}
+		request, err := officeCopilotRequest(body, true)
+		if err != nil {
+			writeAnthropicCountTokensError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+			return err
+		}
+		estimate := office_copilot.NewTokenEstimate(office_copilot.EstimateInput(request), 0)
+		officeCopilotUsageHeaders(c)
+		c.JSON(http.StatusOK, gin.H{"input_tokens": estimate.InputTokens, "usage_estimate": estimate})
+		return nil
 	}
 
 	// 国产供应商与 OpenCode（全部协议，含 anthropic）：一律本地估算，不发上游请求。

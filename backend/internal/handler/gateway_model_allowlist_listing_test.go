@@ -243,3 +243,16 @@ func TestFilterBatchImageModelsByAllowlist(t *testing.T) {
 		require.Empty(t, got)
 	})
 }
+
+func TestOfficeCopilotModelsFallbackUsesSupportedRoutes(t *testing.T) {
+	h := newGatewayModelsHandlerForTest(&gatewayModelsAccountRepoStub{byGroup: map[int64][]service.Account{}})
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodGet, "/v1/models", nil)
+	c.Set(string(middleware2.ContextKeyAPIKey), &service.APIKey{Group: &service.Group{ID: 7, Platform: service.PlatformOfficeCopilot}})
+	h.Models(c)
+	require.Equal(t, http.StatusOK, rec.Code)
+	var got gatewayModelsResponseForTest
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
+	require.Equal(t, []string{"claude-opus-5-5", "claude-sonnet-5", "gpt-6-sol", "copilot-auto"}, modelIDsForTest(got.Data))
+}

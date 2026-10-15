@@ -1,5 +1,26 @@
 export default {
     accounts: {
+      officeQuota: {
+        restrictionObserved: '最近调用报告：',
+        imageQuotaLimited: '图片生成额度不足，不代表文本模型额度耗尽。',
+        imageCapacityLimited: '图片生成受到上游容量限制，不代表账号额度耗尽。',
+        capabilityRestricted: '上游报告功能访问限制，具体范围和账号剩余额度未知。',
+        accountBalance: '账号剩余额度',
+        unavailable: '上游未提供',
+        unverified: '无法确认',
+        balanceHelp: '目前无法确定剩余次数、总额度和重置时间。',
+        details: '最近调用详情',
+        requestModel: '请求模型：{model}',
+        conversation: '上游会话：{used} / {limit} 条（非账号额度）',
+        sessionHelp: '每次 API 请求会新建上游会话，1/600 不表示每日或每周用量。',
+        meterHelp: '以下为上游原始计数，是否适用于当前账号尚未确认，不代表可用请求次数。',
+        snapshot: '调用后记录',
+        refresh: '读取记录',
+        loading: '读取中…',
+        observed: '记录于 {time}（非实时余额）',
+        noSnapshot: '暂无有效记录，收到用量信息后自动更新',
+        help: '只读取最近调用返回的记录，不向上游查询余额，也不发送额外对话。未提供额度不代表无限。'
+      },
       title: '账号管理',
       description: '管理 AI 平台账号和 Cookie',
       createAccount: '添加账号',
@@ -313,6 +334,7 @@ export default {
         minimax: 'MiniMax',
         opencode_go: 'OpenCode',
         mirasim: 'Mirasim',
+        office_copilot: 'Office Copilot',
       },
       cnProviders: {
         accountMode: {
@@ -1562,6 +1584,27 @@ export default {
           devCodeNotice: '本地开发模式验证码：{code}',
           missingEmailOrCode: '请输入邮箱和验证码',
           pleaseEnterEmail: '请输入邮箱地址'
+        },
+        office_copilot: {
+          title: 'Microsoft Office Copilot 授权登录',
+          followSteps: '请按照以下步骤完成微软 Office Copilot 授权（自动获取长期 FOCI Refresh Token）：',
+          step1GenerateUrl: '生成微软设备登录码',
+          generateAuthUrl: '生成设备验证码并打开登录页',
+          step2OpenUrl: '在浏览器中输入设备验证码并授权',
+          openUrlDesc: '在打开的 https://www.microsoft.com/link 页面中输入上方显示的 8 位设备验证码，并登录你的微软账号允许访问。',
+          openAuthUrl: '打开微软设备授权页',
+          step3EnterCode: '确认已完成浏览器登录',
+          authCodeDesc: '当浏览器提示“大功告成！你现在已登录到 Microsoft Office”后，点击右下角“完成授权并创建”按钮（下方输入框可留空或任意填写）：',
+          authCode: '确认标记 / 设备码（可自动识别）',
+          authCodePlaceholder: '已在浏览器完成微软登录后，直接点击右下角按钮即可自动兑换 Token',
+          authCodeHint: '系统将自动通过微软 FOCI 家族机制兑换 Substrate Sydney v2 令牌并开启后台自动续期',
+          refreshTokenAuth: '手动输入 RT',
+          refreshTokenDesc: '使用已有的微软 OAuth Refresh Token 直接验证并创建 Office Copilot 账号：',
+          refreshTokenLabel: 'Microsoft Refresh Token',
+          refreshTokenPlaceholder: '粘贴 0.AX... 或 M.C5... 开头的微软 Refresh Token',
+          refreshTokenHint: '支持 Microsoft Office / Copilot 家族客户端签发的 Refresh Token',
+          validateAndCreate: '验证并创建账号',
+          validating: '正在验证...'
         }
       },
       // Gemini specific (platform-wide)

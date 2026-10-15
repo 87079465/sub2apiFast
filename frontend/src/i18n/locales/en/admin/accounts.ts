@@ -1,5 +1,26 @@
 export default {
     accounts: {
+      officeQuota: {
+        restrictionObserved: 'Last request reported: ',
+        imageQuotaLimited: 'Image generation quota is exhausted; text model quota is not established.',
+        imageCapacityLimited: 'Image generation is limited by upstream capacity, not confirmed account quota exhaustion.',
+        capabilityRestricted: 'Upstream reported a capability access restriction; scope and remaining account quota are unknown.',
+        accountBalance: 'Account balance',
+        unavailable: 'Not reported',
+        unverified: 'Unverified',
+        balanceHelp: 'Remaining requests, total allowance and reset time are unavailable.',
+        details: 'Latest request details',
+        requestModel: 'Requested model: {model}',
+        conversation: 'Upstream conversation: {used} / {limit} messages (not account quota)',
+        sessionHelp: 'Each API request starts a new upstream conversation. 1/600 is not daily or weekly usage.',
+        meterHelp: 'Raw upstream counters below have unverified applicability to this account. They are not available request counts.',
+        snapshot: 'Recorded after chat',
+        refresh: 'Read snapshot',
+        loading: 'Loading…',
+        observed: 'Observed {time} (not a live balance)',
+        noSnapshot: 'No valid snapshot; updates when usage metadata is received',
+        help: 'Reads the latest recorded observation without querying upstream balance or sending a chat. Missing quota does not mean unlimited.'
+      },
       title: 'Account Management',
       description: 'Manage AI platform accounts and credentials',
       createAccount: 'Create Account',
@@ -110,6 +131,7 @@ export default {
         minimax: 'MiniMax',
         opencode_go: 'OpenCode',
         mirasim: 'Mirasim',
+        office_copilot: 'Office Copilot',
       },
       cnProviders: {
         accountMode: {
@@ -1160,6 +1182,27 @@ export default {
       },
       // OAuth flow
       oauth: {
+        office_copilot: {
+          title: 'Microsoft Office Copilot Authorization',
+          followSteps: 'Follow these steps to authorize Microsoft Office Copilot and obtain a long-lived FOCI refresh token:',
+          step1GenerateUrl: 'Generate a Microsoft device code',
+          generateAuthUrl: 'Generate Device Code and Open Sign-In',
+          step2OpenUrl: 'Enter the device code in your browser and authorize',
+          openUrlDesc: 'Enter the 8-character device code shown above at https://www.microsoft.com/link, then sign in to your Microsoft account and allow access.',
+          openAuthUrl: 'Open Microsoft Device Authorization',
+          step3EnterCode: 'Confirm browser sign-in is complete',
+          authCodeDesc: 'Once the browser confirms that you are signed in to Microsoft Office, click the button at the bottom right to complete authorization and create the account. The input below is optional.',
+          authCode: 'Confirmation / Device Code (Auto-Detected)',
+          authCodePlaceholder: 'After signing in, click the button at the bottom right to exchange the token automatically',
+          authCodeHint: 'The system exchanges a Substrate Sydney v2 token through Microsoft FOCI and enables automatic renewal.',
+          refreshTokenAuth: 'Enter Refresh Token Manually',
+          refreshTokenDesc: 'Validate an existing Microsoft OAuth refresh token to create an Office Copilot account:',
+          refreshTokenLabel: 'Microsoft Refresh Token',
+          refreshTokenPlaceholder: 'Paste a Microsoft refresh token starting with 0.AX... or M.C5...',
+          refreshTokenHint: 'Supports refresh tokens issued to Microsoft Office / Copilot family clients',
+          validateAndCreate: 'Validate and Create Account',
+          validating: 'Validating...'
+        },
         title: 'Claude Account Authorization',
         authMethod: 'Authorization Method',
         manualAuth: 'Manual Authorization',

@@ -3,14 +3,16 @@ import { flushPromises, mount } from '@vue/test-utils'
 import AccountUsageCell from '../AccountUsageCell.vue'
 import type { Account } from '@/types'
 
-const { getUsage } = vi.hoisted(() => ({
-  getUsage: vi.fn()
+const { getUsage, getById } = vi.hoisted(() => ({
+  getUsage: vi.fn(),
+  getById: vi.fn()
 }))
 
 vi.mock('@/api/admin', () => ({
   adminAPI: {
     accounts: {
-      getUsage
+      getUsage,
+      getById
     }
   }
 }))
@@ -113,8 +115,57 @@ const cnUsageCellStubs = {
 }
 
 describe('AccountUsageCell', () => {
+  it('does not apply an Office snapshot response to another account after switching rows', async () => {
+    const first = makeAccount({ id: 89561, platform: 'office_copilot', type: 'oauth' })
+    const second = makeAccount({ id: 89562, platform: 'office_copilot', type: 'oauth' })
+    let resolve!: (account: Account) => void
+    getById.mockImplementation(() => new Promise<Account>(done => { resolve = done }))
+    const wrapper = mount(AccountUsageCell, { props: { account: first } })
+    await wrapper.get('[data-test="office-copilot-usage"] button').trigger('click')
+    await wrapper.setProps({ account: second })
+    resolve(first)
+    await flushPromises()
+    expect(wrapper.emitted('account-updated')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('reads Office snapshots from account metadata without using an OAuth quota probe', async () => {
+    const account = makeAccount({ id: 89563, platform: 'office_copilot', type: 'oauth', extra: {
+      office_copilot_usage: { observed_at: '2026-10-13T00:00:00Z', model: 'claude-opus-5-5', conversation_limit: 600 }
+    } })
+    getById.mockResolvedValue(account)
+    const wrapper = mount(AccountUsageCell, { props: {
+      account
+    } })
+    await flushPromises()
+    expect(getUsage).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-test="office-copilot-usage"]').exists()).toBe(true)
+    await wrapper.get('[data-test="office-copilot-usage"] button').trigger('click')
+    await flushPromises()
+    expect(getById).toHaveBeenCalledWith(89563)
+    expect(getUsage).not.toHaveBeenCalled()
+    expect(wrapper.emitted('account-updated')?.[0]).toEqual([account])
+    wrapper.unmount()
+  })
+
+  it('keeps Office accounts out of legacy OAuth batch probes', async () => {
+    const requestBatchedUsage = vi.fn()
+    const account = makeAccount({ id: 89564, platform: 'office_copilot', type: 'oauth' })
+    getById.mockResolvedValue(account)
+    const wrapper = mount(AccountUsageCell, { props: { account, requestBatchedUsage } })
+    await flushPromises()
+    expect(requestBatchedUsage).not.toHaveBeenCalled()
+    expect(getUsage).not.toHaveBeenCalled()
+    await wrapper.get('[data-test="office-copilot-usage"] button').trigger('click')
+    await flushPromises()
+    expect(getById).toHaveBeenCalledWith(89564)
+    expect(requestBatchedUsage).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   beforeEach(() => {
     getUsage.mockReset()
+    getById.mockReset()
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation(() => ({

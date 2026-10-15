@@ -241,6 +241,19 @@
             <PlatformIcon platform="mirasim" size="sm" />
             Mirasim
           </button>
+          <button
+            type="button"
+            @click="selectOfficeCopilotPlatform()"
+            :class="[
+              'flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+              form.platform === 'office_copilot'
+                ? 'bg-white text-sky-700 shadow-sm dark:bg-dark-600 dark:text-sky-300'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            ]"
+          >
+            <PlatformIcon platform="office_copilot" size="sm" />
+            Office Copilot
+          </button>
         </div>
       </div>
 
@@ -487,6 +500,38 @@
             <div>
               <span class="block text-sm font-medium text-gray-900 dark:text-white">API Key</span>
               <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.accounts.types.responsesApi') }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Office Copilot Account Type Selection -->
+      <div v-if="form.platform === 'office_copilot'">
+        <label class="input-label">{{ t('admin.accounts.accountType') }}</label>
+        <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            @click="accountCategory = 'oauth-based'"
+            :class="[
+              'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
+              accountCategory === 'oauth-based'
+                ? 'border-sky-600 bg-sky-50 dark:border-sky-500 dark:bg-sky-900/20'
+                : 'border-gray-200 hover:border-sky-300 dark:border-dark-600 dark:hover:border-sky-700'
+            ]"
+          >
+            <div
+              :class="[
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                accountCategory === 'oauth-based'
+                  ? 'bg-sky-600 text-white'
+                  : 'bg-gray-100 text-gray-500 dark:bg-dark-600 dark:text-gray-400'
+              ]"
+            >
+              <PlatformIcon platform="office_copilot" size="sm" />
+            </div>
+            <div>
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">Microsoft 365 OAuth</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">微软官方设备码一键授权 / Refresh Token 导入</span>
             </div>
           </button>
         </div>
@@ -3657,10 +3702,10 @@
         :loading="currentOAuthLoading"
         :error="currentOAuthError"
         :show-help="form.platform === 'anthropic'"
-        :show-proxy-warning="form.platform !== 'openai' && form.platform !== 'grok' && form.platform !== 'mirasim' && !!form.proxy_id"
+        :show-proxy-warning="form.platform !== 'openai' && form.platform !== 'grok' && form.platform !== 'mirasim' && form.platform !== 'office_copilot' && !!form.proxy_id"
         :allow-multiple="form.platform === 'anthropic'"
         :show-cookie-option="form.platform === 'anthropic'"
-        :show-refresh-token-option="form.platform === 'openai' || form.platform === 'antigravity' || form.platform === 'grok' || form.platform === 'mirasim'"
+        :show-refresh-token-option="form.platform === 'openai' || form.platform === 'antigravity' || form.platform === 'grok' || form.platform === 'mirasim' || form.platform === 'office_copilot'"
         :show-mobile-refresh-token-option="form.platform === 'openai'"
         :show-session-token-option="false"
         :show-access-token-option="false"
@@ -4031,6 +4076,7 @@ import { useGeminiOAuth } from '@/composables/useGeminiOAuth'
 import { useAntigravityOAuth } from '@/composables/useAntigravityOAuth'
 import { useGrokOAuth } from '@/composables/useGrokOAuth'
 import { useMirasimOAuth } from '@/composables/useMirasimOAuth'
+import { useOfficeCopilotOAuth } from '@/composables/useOfficeCopilotOAuth'
 import type {
   Proxy,
   AdminGroup,
@@ -4131,6 +4177,8 @@ const oauthStepTitle = computed(() => {
   if (form.platform === 'gemini') return t('admin.accounts.oauth.gemini.title')
   if (form.platform === 'antigravity') return t('admin.accounts.oauth.antigravity.title')
   if (form.platform === 'grok') return t('admin.accounts.oauth.grok.title')
+  if (form.platform === 'mirasim') return t('admin.accounts.oauth.mirasim.title')
+  if (form.platform === 'office_copilot') return t('admin.accounts.oauth.office_copilot.title')
   return t('admin.accounts.oauth.title')
 })
 
@@ -4225,6 +4273,7 @@ const geminiOAuth = useGeminiOAuth() // For Gemini OAuth
 const antigravityOAuth = useAntigravityOAuth() // For Antigravity OAuth
 const grokOAuth = useGrokOAuth() // For Grok OAuth
 const mirasimOAuth = useMirasimOAuth() // For Mirasim OAuth
+const officeCopilotOAuth = useOfficeCopilotOAuth() // For Office Copilot OAuth
 
 // Computed: current OAuth state for template binding
 const currentAuthUrl = computed(() => {
@@ -4233,6 +4282,7 @@ const currentAuthUrl = computed(() => {
   if (form.platform === 'antigravity') return antigravityOAuth.authUrl.value
   if (form.platform === 'grok') return grokOAuth.authUrl.value
   if (form.platform === 'mirasim') return mirasimOAuth.authUrl.value
+  if (form.platform === 'office_copilot') return officeCopilotOAuth.authUrl.value
   return oauth.authUrl.value
 })
 
@@ -4242,6 +4292,7 @@ const currentSessionId = computed(() => {
   if (form.platform === 'antigravity') return antigravityOAuth.sessionId.value
   if (form.platform === 'grok') return grokOAuth.sessionId.value
   if (form.platform === 'mirasim') return mirasimOAuth.sessionId.value
+  if (form.platform === 'office_copilot') return officeCopilotOAuth.sessionId.value
   return oauth.sessionId.value
 })
 
@@ -4251,6 +4302,7 @@ const currentOAuthLoading = computed(() => {
   if (form.platform === 'antigravity') return antigravityOAuth.loading.value
   if (form.platform === 'grok') return grokOAuth.loading.value
   if (form.platform === 'mirasim') return mirasimOAuth.loading.value
+  if (form.platform === 'office_copilot') return officeCopilotOAuth.loading.value
   return oauth.loading.value
 })
 
@@ -4260,6 +4312,7 @@ const currentOAuthError = computed(() => {
   if (form.platform === 'antigravity') return antigravityOAuth.error.value
   if (form.platform === 'grok') return grokOAuth.error.value
   if (form.platform === 'mirasim') return mirasimOAuth.error.value
+  if (form.platform === 'office_copilot') return officeCopilotOAuth.error.value
   return oauth.error.value
 })
 
@@ -4427,6 +4480,12 @@ function selectMirasimPlatform() {
   mirasimDeviceId.value = ''
   mirasimPrivateKey.value = ''
   mirasimProtocolRules.value = cloneMirasimProtocolRules()
+}
+function selectOfficeCopilotPlatform() {
+  form.platform = 'office_copilot'
+  form.type = 'oauth'
+  accountCategory.value = 'oauth-based'
+  addMethod.value = 'oauth'
 }
 // 账号类型 / 协议变更时同步默认 base url。
 watch(openCodeAccountMode, (mode, previousMode) => {
@@ -4931,6 +4990,9 @@ const canExchangeCode = computed(() => {
   if (form.platform === 'mirasim') {
     return authCode.trim() && mirasimOAuth.sessionId.value && !mirasimOAuth.loading.value
   }
+  if (form.platform === 'office_copilot') {
+    return !!officeCopilotOAuth.sessionId.value && !officeCopilotOAuth.loading.value
+  }
   return authCode.trim() && oauth.sessionId.value && !oauth.loading.value
 })
 
@@ -5034,6 +5096,11 @@ watch(
       form.load_factor = null
     }
     if (newPlatform === 'mirasim') {
+      accountCategory.value = 'oauth-based'
+      addMethod.value = 'oauth'
+      modelRestrictionMode.value = 'mapping'
+    }
+    if (newPlatform === 'office_copilot') {
       accountCategory.value = 'oauth-based'
       addMethod.value = 'oauth'
       modelRestrictionMode.value = 'mapping'
@@ -6063,6 +6130,7 @@ const goBackToBasicInfo = () => {
   antigravityOAuth.resetState()
   grokOAuth.resetState()
   mirasimOAuth.resetState()
+  officeCopilotOAuth.resetState()
   oauthFlowRef.value?.reset()
 }
 
@@ -6086,6 +6154,8 @@ const handleGenerateUrl = async () => {
       form.proxy_id,
       oauthFlowRef.value?.mirasimProvider || 'github'
     )
+  } else if (form.platform === 'office_copilot') {
+    await officeCopilotOAuth.generateAuthUrl(form.proxy_id)
   } else {
     await oauth.generateAuthUrl(addMethod.value, form.proxy_id)
   }
@@ -6100,6 +6170,8 @@ const handleValidateRefreshToken = (rt: string) => {
     handleGrokValidateRT(rt)
   } else if (form.platform === 'mirasim') {
     handleMirasimValidateRT(rt)
+  } else if (form.platform === 'office_copilot') {
+    handleOfficeCopilotValidateRT(rt)
   }
 }
 
@@ -7352,6 +7424,38 @@ const handleAnthropicExchange = async (authCode: string) => {
   }
 }
 
+// Office Copilot 设备码兑换与 Refresh Token 验证
+const handleOfficeCopilotExchange = async () => {
+  const tokenInfo = await officeCopilotOAuth.exchangeDeviceCode(form.proxy_id)
+  if (!tokenInfo) return
+
+  const credentials: Record<string, unknown> = {
+    access_token: tokenInfo.access_token,
+    refresh_token: tokenInfo.refresh_token,
+    client_id: tokenInfo.client_id,
+    expires_in: tokenInfo.expires_in,
+    expires_at: tokenInfo.expires_at,
+    scenario: tokenInfo.scenario
+  }
+  await createAccountAndFinish('office_copilot', 'oauth', credentials, {})
+}
+
+const handleOfficeCopilotValidateRT = async (refreshTokenInput: string) => {
+  if (!refreshTokenInput.trim()) return
+  const tokenInfo = await officeCopilotOAuth.validateRefreshToken(refreshTokenInput.trim(), form.proxy_id)
+  if (!tokenInfo) return
+
+  const credentials: Record<string, unknown> = {
+    access_token: tokenInfo.access_token,
+    refresh_token: tokenInfo.refresh_token || refreshTokenInput.trim(),
+    client_id: tokenInfo.client_id,
+    expires_in: tokenInfo.expires_in,
+    expires_at: tokenInfo.expires_at,
+    scenario: tokenInfo.scenario
+  }
+  await createAccountAndFinish('office_copilot', 'oauth', credentials, {})
+}
+
 // 主入口：根据平台路由到对应处理函数
 const handleExchangeCode = async () => {
   const authCode = oauthFlowRef.value?.authCode || ''
@@ -7367,6 +7471,8 @@ const handleExchangeCode = async () => {
       return handleGrokExchange(authCode)
     case 'mirasim':
       return handleMirasimExchange(authCode)
+    case 'office_copilot':
+      return handleOfficeCopilotExchange()
     default:
       return handleAnthropicExchange(authCode)
   }

@@ -538,7 +538,7 @@ export interface PaginationConfig {
 
 // ==================== API Key & Group Types ====================
 
-export type GroupPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'kimi' | 'zhipu' | 'deepseek' | 'minimax' | 'opencode_go' | 'mirasim' | 'composite'
+export type GroupPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'kimi' | 'zhipu' | 'deepseek' | 'minimax' | 'opencode_go' | 'mirasim' | 'office_copilot' | 'composite'
 
 export type VideoModelPrices = Record<string, Record<string, number>>
 
@@ -918,7 +918,7 @@ export interface UpdateGroupRequest {
 
 // ==================== Account & Proxy Types ====================
 
-export type AccountPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'kimi' | 'zhipu' | 'deepseek' | 'minimax' | 'opencode_go' | 'mirasim'
+export type AccountPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'kimi' | 'zhipu' | 'deepseek' | 'minimax' | 'opencode_go' | 'mirasim' | 'office_copilot'
 export type AccountType = 'oauth' | 'setup-token' | 'apikey' | 'upstream' | 'bedrock' | 'service_account'
 export type OAuthAddMethod = 'oauth' | 'setup-token'
 export type ProxyProtocol = 'http' | 'https' | 'socks5' | 'socks5h'
@@ -1421,7 +1421,17 @@ export interface GrokBillingSummary {
   failed_windows?: string[]
 }
 
+export interface OfficeCopilotQuotaSnapshot {
+  observed_at: string
+  model: string
+  conversation_used?: number
+  conversation_limit?: number
+  meters?: Record<string, { remainingAllowance?: number }>
+  restrictions?: { code: string; category: 'quota' | 'capacity' | 'access'; scope: string; has_access?: boolean }[]
+}
+
 export interface AccountUsageInfo {
+  office_copilot_quota?: OfficeCopilotQuotaSnapshot | null
   source?: 'passive' | 'active'
   updated_at: string | null
   five_hour: UsageProgress | null

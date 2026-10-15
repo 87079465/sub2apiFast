@@ -490,6 +490,7 @@ export function getModelsByPlatform(platform: string): string[] {
       'kimi-k3',
       'deepseek-v3'
     ]
+    case 'office_copilot': return ['claude-opus-5-5', 'claude-sonnet-5', 'gpt-6-sol', 'copilot-auto']
     case 'doubao': return doubaoModels
     case 'minimax': return minimaxModels
     case 'baidu': return baiduModels
