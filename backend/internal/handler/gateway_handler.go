@@ -1192,7 +1192,7 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 	}
 
 	// Fallback to default models
-	if platform == service.PlatformOfficeCopilot {
+	if platform == service.PlatformOfficeCopilot || platform == service.PlatformLogicc {
 		writeModelsList(c, platform, defaultModelIDsForPlatform(platform))
 		return
 	}
@@ -1483,6 +1483,8 @@ func defaultModelIDsForPlatform(platform string) []string {
 		return service.DefaultOpenCodeGoModelIDs()
 	case service.PlatformMirasim:
 		return service.DefaultMirasimModelIDs()
+	case service.PlatformLogicc:
+		return []string{"default"}
 	case service.PlatformOfficeCopilot:
 		return []string{"claude-opus-5-5", "claude-sonnet-5", "gpt-6-sol", "copilot-auto"}
 	case service.PlatformComposite:

@@ -95,6 +95,9 @@ func (s *OpenAIGatewayService) forwardAsChatCompletions(
 		return nil, errors.New("codex_cli_only restriction: only codex official clients are allowed")
 	}
 
+	if account.IsLogicc() {
+		return s.forwardLogicc(ctx, c, account, body, defaultMappedModel, "chat")
+	}
 	if account.Platform == PlatformOfficeCopilot {
 		return s.forwardOfficeCopilotChatCompletions(ctx, c, account, body, defaultMappedModel)
 	}

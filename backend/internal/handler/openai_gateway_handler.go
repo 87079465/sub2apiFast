@@ -307,7 +307,7 @@ func allowOpenAICompatibleMessagesDispatch(c *gin.Context, apiKey *service.APIKe
 	if apiKey == nil || apiKey.Group == nil {
 		return true
 	}
-	if apiKey.Group.Platform == service.PlatformGrok || apiKey.Group.Platform == service.PlatformOfficeCopilot {
+	if apiKey.Group.Platform == service.PlatformGrok || apiKey.Group.Platform == service.PlatformOfficeCopilot || apiKey.Group.Platform == service.PlatformLogicc {
 		return true
 	}
 	// 国产供应商分组与 grok 同语义:/v1/messages 就是其主要服务形态(anthropic
@@ -321,7 +321,7 @@ func allowOpenAICompatibleMessagesDispatch(c *gin.Context, apiKey *service.APIKe
 	// 解析到 openai 目标则受 composite 分组自身的可配置开关控制。
 	if apiKey.Group.Platform == service.PlatformComposite && c != nil && c.Request != nil {
 		if platform, ok := service.ResolvedTargetPlatformFromContext(c.Request.Context()); ok &&
-			(platform == service.PlatformGrok || platform == service.PlatformOfficeCopilot || service.IsMultiProtocolAPIKeyProvider(platform)) {
+			(platform == service.PlatformGrok || platform == service.PlatformOfficeCopilot || platform == service.PlatformLogicc || service.IsMultiProtocolAPIKeyProvider(platform)) {
 			return true
 		}
 	}
@@ -332,7 +332,7 @@ func openAICompatibleTextTargetAllowed(c *gin.Context, apiKey *service.APIKey, m
 	return compositeTargetPlatformAllowed(c, apiKey, model,
 		service.PlatformOpenAI, service.PlatformGrok,
 		service.PlatformKimi, service.PlatformZhipu, service.PlatformDeepseek,
-		service.PlatformMiniMax, service.PlatformOpenCodeGo, service.PlatformMirasim, service.PlatformOfficeCopilot)
+		service.PlatformMiniMax, service.PlatformOpenCodeGo, service.PlatformMirasim, service.PlatformOfficeCopilot, service.PlatformLogicc)
 }
 
 // isResponsesWebSocketCompositePlatform 限定 composite 分组在 Responses WebSocket

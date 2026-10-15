@@ -33,6 +33,9 @@ func (s *OpenAIGatewayService) ForwardAsAnthropic(
 	promptCacheKey string,
 	defaultMappedModel string,
 ) (*OpenAIForwardResult, error) {
+	if account.IsLogicc() {
+		return s.forwardLogicc(ctx, c, account, body, defaultMappedModel, "messages")
+	}
 	if account.IsOfficeCopilot() {
 		return s.forwardOfficeCopilotMessages(ctx, c, account, body, defaultMappedModel)
 	}

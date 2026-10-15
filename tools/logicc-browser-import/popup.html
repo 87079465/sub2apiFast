@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logicc 会话导入</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header><span class="mark">L</span><div><h1>Logicc 会话导入</h1><p>读取已登录会话，填入账号表单</p></div></header>
+    <section>
+      <label>导入到</label>
+      <div id="destination" class="destination">正在检查当前标签页…</div>
+      <label for="source">已登录的 Logicc 标签页</label>
+      <select id="source" disabled><option>正在查找…</option></select>
+      <p class="hint">只导入 Session JWT、Session ID 和 __client Cookie。请确认上面的后台地址是你自己的 Sub2API。</p>
+      <button id="import" type="button" disabled>读取并填入</button>
+      <p id="status" role="status" aria-live="polite">请保持 Logicc 和后台账号表单都已打开。</p>
+    </section>
+    <footer>凭据不会写入扩展存储或剪贴板；填入后仍需你在后台保存账号。</footer>
+    <script type="module" src="popup.mjs"></script>
+  </body>
+</html>

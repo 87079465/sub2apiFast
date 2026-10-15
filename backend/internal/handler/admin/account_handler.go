@@ -2900,6 +2900,20 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 		return
 	}
 
+	if account.IsLogicc() {
+		models, err := h.accountTestService.GetLogiccModels(c.Request.Context(), account)
+		if err != nil {
+			response.Error(c, http.StatusBadGateway, err.Error())
+			return
+		}
+		items := make([]claude.Model, 0, len(models))
+		for _, m := range models {
+			items = append(items, claude.Model{ID: m.ID, Type: "model", DisplayName: m.Name})
+		}
+		response.Success(c, items)
+		return
+	}
+
 	// Handle Office Copilot accounts
 	if account.IsOfficeCopilot() {
 		response.Success(c, []claude.Model{

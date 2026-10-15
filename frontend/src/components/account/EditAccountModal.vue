@@ -11,6 +11,7 @@
       @submit.prevent="handleSubmit"
       class="space-y-5"
     >
+      <LogiccCredentialsFields v-if="account.platform === 'logicc'" :key="account.id" v-model="logiccCredentials" :editing="true" />
       <div>
         <label class="input-label">{{ t('common.name') }}</label>
         <input v-model="form.name" type="text" required class="input" data-tour="edit-account-form-name" />
@@ -3133,6 +3134,7 @@
 </template>
 
 <script setup lang="ts">
+import LogiccCredentialsFields from './LogiccCredentialsFields.vue'
 import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -5171,6 +5173,8 @@ const submitUpdateAccount = async (accountID: number, updatePayload: Record<stri
   }
 }
 
+const logiccCredentials = ref<Record<string, string>>({})
+watch(() => props.show, () => { logiccCredentials.value = {} })
 const handleSubmit = async () => {
   if (!props.account) return
   const accountID = props.account.id
@@ -5586,6 +5590,14 @@ const handleSubmit = async () => {
       }
 
       updatePayload.credentials = newCredentials
+    }
+
+    if (props.account.platform === 'logicc') {
+      const credentials = { ...(updatePayload.credentials || props.account.credentials || {}) } as Record<string, unknown>
+      for (const [key, value] of Object.entries(logiccCredentials.value)) {
+        if (value.trim()) credentials[key] = value.trim()
+      }
+      updatePayload.credentials = credentials
     }
 
     // For antigravity accounts, handle mixed_scheduling and allow_overages in extra

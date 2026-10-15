@@ -1270,6 +1270,7 @@ function generateRoutedCodexFiles(
     opencode_go: 'glm-5.3',
     mirasim: 'claude-opus-5',
     office_copilot: 'claude-opus-5-5',
+    logicc: 'default',
     composite: 'gpt-5.5'
   }
   const preferredModel = preferredModels[platform] || ''
@@ -1287,6 +1288,7 @@ function generateRoutedCodexFiles(
     opencode_go: 'OpenCode',
     mirasim: 'Mirasim',
     office_copilot: 'Office Copilot',
+    logicc: 'Logicc',
     composite: 'Composite'
   }
   const label = labels[platform]

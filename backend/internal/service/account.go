@@ -299,7 +299,7 @@ func (a *Account) IsCNProvider() bool {
 // openai/grok 原生走 OpenAI 网关；国产供应商同为 OpenAI Chat Completions
 // 兼容上游，也经 OpenAI 网关转发。OpenCode 同样经 OpenAI 网关按模型分流。
 func (a *Account) IsOpenAICompatible() bool {
-	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok || a.IsCNProvider() || a.IsOpenCodeGo() || a.IsMirasim() || a.IsOfficeCopilot())
+	return a != nil && (a.Platform == PlatformOpenAI || a.Platform == PlatformGrok || a.IsCNProvider() || a.IsOpenCodeGo() || a.IsMirasim() || a.IsOfficeCopilot() || a.IsLogicc())
 }
 
 func (a *Account) GeminiOAuthType() string {
@@ -1423,6 +1423,8 @@ func (a *Account) GetOpenAIBaseURL() string {
 		return a.openCodeDefaultChatBaseURL()
 	case PlatformMirasim:
 		return a.mirasimDefaultChatBaseURL()
+	case PlatformLogicc:
+		return "https://app.logicc.com/api"
 	case PlatformOfficeCopilot:
 		return "https://substrate.office.com"
 	default:
@@ -1449,6 +1451,8 @@ func (a *Account) IsCodingPlan() bool {
 }
 
 // IsOfficeCopilot 报告账号是否为 Office Copilot 平台。
+func (a *Account) IsLogicc() bool { return a != nil && a.Platform == PlatformLogicc }
+
 func (a *Account) IsOfficeCopilot() bool {
 	return a != nil && a.Platform == PlatformOfficeCopilot
 }
@@ -1901,6 +1905,9 @@ func (a *Account) SupportsOpenAIEndpointCapability(capability OpenAIEndpointCapa
 	}
 	if !a.IsOpenAICompatible() {
 		return false
+	}
+	if a.IsLogicc() {
+		return capability == OpenAIEndpointCapabilityChatCompletions || capability == OpenAIEndpointCapabilityResponses
 	}
 	if a.IsOfficeCopilot() && capability != OpenAIEndpointCapabilityChatCompletions {
 		return false

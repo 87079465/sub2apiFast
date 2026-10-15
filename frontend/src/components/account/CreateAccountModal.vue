@@ -254,8 +254,19 @@
             <PlatformIcon platform="office_copilot" size="sm" />
             Office Copilot
           </button>
+          <button
+            type="button"
+            class="flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium"
+            :class="form.platform === 'logicc' ? 'bg-white text-cyan-700 shadow-sm dark:bg-dark-600' : 'text-gray-600 dark:text-gray-400'"
+            @click="form.platform = 'logicc'"
+          >
+            <PlatformIcon platform="logicc" size="sm" />
+            Logicc
+          </button>
         </div>
       </div>
+
+      <LogiccCredentialsFields v-if="form.platform === 'logicc'" v-model="logiccCredentials" />
 
       <!-- Account Type Selection (Anthropic) -->
       <div v-if="form.platform === 'anthropic'">
@@ -4051,6 +4062,7 @@
 </template>
 
 <script setup lang="ts">
+import LogiccCredentialsFields from './LogiccCredentialsFields.vue'
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -4948,7 +4960,9 @@ const form = reactive({
 })
 
 // Helper to check if current type needs OAuth flow
+const logiccCredentials = ref<Record<string, string>>({})
 const isOAuthFlow = computed(() => {
+  if (form.platform === 'logicc') return false
   // Antigravity upstream 类型不需要 OAuth 流程
   if (form.platform === 'antigravity' && antigravityAccountType.value === 'upstream') {
     return false
@@ -5099,6 +5113,11 @@ watch(
       accountCategory.value = 'oauth-based'
       addMethod.value = 'oauth'
       modelRestrictionMode.value = 'mapping'
+    }
+    if (newPlatform === 'logicc') {
+      accountCategory.value = 'oauth-based'
+      modelRestrictionMode.value = 'mapping'
+      form.concurrency = 1
     }
     if (newPlatform === 'office_copilot') {
       accountCategory.value = 'oauth-based'
@@ -5526,6 +5545,7 @@ const submitCreateAccount = async (payload: CreateAccountRequest) => {
 
 // Methods
 const resetForm = () => {
+  logiccCredentials.value = {}
   step.value = 1
   form.name = ''
   form.notes = ''
@@ -5853,6 +5873,23 @@ const handleVertexServiceAccountDrop = async (event: DragEvent) => {
 }
 
 const handleSubmit = async () => {
+  if (form.platform === 'logicc') {
+    if (!form.name.trim()) {
+      appStore.showError(t('admin.accounts.pleaseEnterAccountName'))
+      return
+    }
+    const credentials: Record<string, unknown> = Object.fromEntries(
+      Object.entries(logiccCredentials.value).map(([key, value]) => [key, value.trim()])
+    )
+    if (!credentials.access_token && !(credentials.client_cookie && credentials.session_id)) {
+      appStore.showError(t('admin.accounts.logicc.credentialsRequired'))
+      return
+    }
+    const mapping = buildModelMappingObject(modelRestrictionMode.value, allowedModels.value, modelMappings.value)
+    if (mapping) credentials.model_mapping = mapping
+    await createAccountAndFinish('logicc', 'oauth', credentials, {})
+    return
+  }
   // For OAuth-based type, handle OAuth flow (goes to step 2)
   if (isOAuthFlow.value) {
     if (!isGrokSSOInputMethod.value && !form.name.trim()) {

@@ -22,7 +22,8 @@ export const CONCRETE_PLATFORM_OPTIONS = [
   { value: 'minimax', label: 'MiniMax' },
   { value: 'opencode_go', label: 'OpenCode' },
   { value: 'mirasim', label: 'Mirasim' },
-  { value: 'office_copilot', label: 'Office Copilot' }
+  { value: 'office_copilot', label: 'Office Copilot' },
+  { value: 'logicc', label: 'Logicc' }
 ] as const satisfies readonly PlatformOption<AccountPlatform>[]
 
 /** Platforms that can own a group. */

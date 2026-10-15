@@ -1,5 +1,29 @@
 export default {
     accounts: {
+      logicc: {
+        browserImport: "从浏览器导入",
+        downloadExtension: "下载 Chrome / Edge 扩展",
+        browserImportHint: "在同一个 Chrome / Edge 中打开后台和已登录的 Logicc 标签页。点击导入后，打开浏览器工具栏中的扩展完成填入。",
+        cancelImport: "取消等待",
+        installHelp: "首次使用：安装扩展",
+        installStep1: "下载扩展 ZIP 并解压到固定目录。",
+        installStep2: "打开 chrome://extensions 或 edge://extensions，启用“开发者模式”。",
+        installStep3: "点击“加载已解压的扩展程序”，选择包含 manifest.json 的目录，并将扩展固定到工具栏。",
+        installStep4: "在同一浏览器打开本后台；点击“从浏览器导入”，再点扩展图标，确认后台地址和 Logicc 标签页，点击“读取并填入”。Codex 内置浏览器与 Chrome / Edge 不共享标签页。",
+        importStatus: {
+          "waiting": "正在等待扩展，2 分钟内有效。请点浏览器工具栏中的“Sub2API · Logicc 会话导入”，再点“读取并填入”。",
+          "success": "已导入 JWT、Cookie 和 Session ID。请检查表单后保存账号。",
+          "expired": "等待已超时，请重新点击“从浏览器导入”。",
+          "invalid": "收到的会话无效或已过期，请刷新 Logicc 标签页后重新导入。"
+        },
+        hint: '登录 app.logicc.com 后，从 clerk.logicc.com 获取 __client Cookie 值和 sess_ 开头的 Session ID。也可只填 Session JWT，但没有 Cookie 时令牌很快过期。default 使用上游默认模型，具体模型 ID 可在账号测试中获取。',
+        editingHint: '留空保留现有凭据。',
+        credentialsRequired: '请填写 Session JWT，或同时填写 __client Cookie 和 Session ID。',
+        access_token: 'Session JWT',
+        client_cookie: '__client Cookie（仅值）',
+        session_id: 'Session ID（sess_ 开头）',
+        assistant_id: '助手 ID（可选）',
+      },
       officeQuota: {
         restrictionObserved: '最近调用报告：',
         imageQuotaLimited: '图片生成额度不足，不代表文本模型额度耗尽。',

@@ -52,6 +52,7 @@
   <svg v-else-if="platform === 'mirasim'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor">
     <path d="M4 19V5h3.5l4.5 7.5L16.5 5H20v14h-3V9.8L12.7 17h-1.4L7 9.8V19H4z" />
   </svg>
+  <svg v-else-if="platform === 'logicc'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h4v14h10v4H5V3z" /></svg>
   <!-- Microsoft Office Copilot official mark -->
   <svg v-else-if="platform === 'office_copilot'" :class="sizeClass" viewBox="0 0 24 24" fill="currentColor">
     <path d="M2 3h9v9H2V3zm11 0h9v9h-9V3zM2 14h9v9H2v-9zm11 0h9v9h-9v-9z" />

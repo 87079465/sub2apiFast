@@ -296,6 +296,8 @@ func defaultModelsListCandidateIDs(platform string) []string {
 		return xai.DefaultModelIDs()
 	case PlatformOpenCodeGo:
 		return DefaultOpenCodeGoModelIDs()
+	case PlatformLogicc:
+		return []string{"default"}
 	case PlatformMirasim:
 		return DefaultMirasimModelIDs()
 	case PlatformComposite:

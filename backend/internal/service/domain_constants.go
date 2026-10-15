@@ -44,14 +44,15 @@ const (
 	PlatformAntigravity = domain.PlatformAntigravity
 	PlatformGrok        = domain.PlatformGrok
 	// 国产 OpenAI 兼容供应商（与 grok 一样经 OpenAI 网关转发）。
-	PlatformKimi       = domain.PlatformKimi
-	PlatformZhipu      = domain.PlatformZhipu
-	PlatformDeepseek   = domain.PlatformDeepseek
-	PlatformMiniMax    = domain.PlatformMiniMax
-	PlatformOpenCodeGo = domain.PlatformOpenCodeGo
-	PlatformMirasim    = domain.PlatformMirasim
+	PlatformKimi          = domain.PlatformKimi
+	PlatformZhipu         = domain.PlatformZhipu
+	PlatformDeepseek      = domain.PlatformDeepseek
+	PlatformMiniMax       = domain.PlatformMiniMax
+	PlatformOpenCodeGo    = domain.PlatformOpenCodeGo
+	PlatformMirasim       = domain.PlatformMirasim
 	PlatformOfficeCopilot = domain.PlatformOfficeCopilot
-	PlatformComposite  = domain.PlatformComposite
+	PlatformLogicc        = domain.PlatformLogicc
+	PlatformComposite     = domain.PlatformComposite
 	// PlatformKiro is retained for unsupported-platform threshold tests and legacy
 	// account rows. Scheduling-threshold evaluation never pauses kiro accounts.
 	PlatformKiro = "kiro"
@@ -151,6 +152,7 @@ var AllowedQuotaPlatforms = []string{
 	PlatformOpenCodeGo,
 	PlatformMirasim,
 	PlatformOfficeCopilot,
+	PlatformLogicc,
 }
 
 // AllowedSchedulingThresholdPlatforms 是允许设置账号自动停调阈值的平台列表。

@@ -153,7 +153,7 @@ func prepareNativeOpenAIInputTokensCountRequest(body []byte, account *Account) (
 // shouldEstimateOpenAIInputTokensLocally 根据账号平台和端点判断是否本地估算；参数为账号，返回是否跳过上游计数请求。
 // Mirasim 凭据不适用于 OpenAI 官方计数端点，避免错误的 401 触发账号冷却。
 func shouldEstimateOpenAIInputTokensLocally(account *Account) bool {
-	if account == nil || account.IsGrok() || account.IsCNProvider() || account.IsMirasim() || account.IsOfficeCopilot() || account.Type == AccountTypeUpstream {
+	if account == nil || account.IsGrok() || account.IsCNProvider() || account.IsMirasim() || account.IsLogicc() || account.IsOfficeCopilot() || account.Type == AccountTypeUpstream {
 		return true
 	}
 	if account.Type != AccountTypeAPIKey {
@@ -291,7 +291,7 @@ func (s *OpenAIGatewayService) ForwardCountTokensAsAnthropic(
 	// 高频调用此端点，本地 tiktoken 估算是与 Grok 一致的既有方案。
 	// Mirasim 同样使用本地估算，不能将它的 OAuth Token 发送到 api.openai.com，
 	// 否则计数返回的 issuer 401 会误触发账号冷却，导致后续正常对话无账号可用。
-	if account.IsCNProvider() || account.IsOpenCodeGo() || account.IsMirasim() {
+	if account.IsCNProvider() || account.IsOpenCodeGo() || account.IsMirasim() || account.IsLogicc() {
 		estimated, err := estimateAnthropicCountTokensLocally(body)
 		if err != nil {
 			writeAnthropicCountTokensError(c, http.StatusBadRequest, "invalid_request_error", "Failed to parse request body")

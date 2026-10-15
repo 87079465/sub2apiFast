@@ -421,6 +421,9 @@ func (s *AccountTestService) TestAccountConnection(c *gin.Context, accountID int
 		return s.testMirasimAccountConnection(c, account, modelID, prompt)
 	}
 
+	if account.IsLogicc() {
+		return s.testLogiccAccountConnection(c, account, modelID, prompt)
+	}
 	if account.IsOfficeCopilot() {
 		return s.testOfficeCopilotAccountConnection(c, account, modelID, prompt)
 	}

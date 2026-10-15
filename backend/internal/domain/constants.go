@@ -35,7 +35,8 @@ const (
 	PlatformMirasim = "mirasim"
 	// PlatformOfficeCopilot 是 Microsoft Office Copilot 平台（Substrate / Sydney 网关）。
 	PlatformOfficeCopilot = "office_copilot"
-	PlatformComposite  = "composite"
+	PlatformLogicc        = "logicc"
+	PlatformComposite     = "composite"
 )
 
 // Account mode constants 区分国产供应商的「按量付费（余额）」与「Coding Plan」两种接入方式。

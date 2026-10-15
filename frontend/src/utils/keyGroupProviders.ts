@@ -18,7 +18,8 @@ const PROVIDER_BY_PLATFORM: Record<GroupPlatform, KeyGroupProvider> = {
   composite: 'other',
   opencode_go: 'other',
   mirasim: 'other',
-  office_copilot: 'other'
+  office_copilot: 'other',
+  logicc: 'other'
 }
 
 export function getKeyGroupProvider(platform: GroupPlatform): KeyGroupProvider {

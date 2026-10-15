@@ -1,5 +1,29 @@
 export default {
     accounts: {
+      logicc: {
+        browserImport: "Import from browser",
+        downloadExtension: "Download Chrome / Edge extension",
+        browserImportHint: "Open this admin page and a signed-in Logicc tab in the same Chrome / Edge profile. Start the import, then open the toolbar extension to fill the form.",
+        cancelImport: "Cancel",
+        installHelp: "First use: install the extension",
+        installStep1: "Download the extension ZIP and extract it to a permanent folder.",
+        installStep2: "Open chrome://extensions or edge://extensions and enable Developer mode.",
+        installStep3: "Choose Load unpacked, select the folder containing manifest.json, and pin the extension to the toolbar.",
+        installStep4: "Open this admin page in that same browser. Click Import from browser, open the extension, confirm the destination and Logicc tab, then click the import button. The Codex browser does not share Chrome / Edge tabs.",
+        importStatus: {
+          "waiting": "Waiting for the extension for up to 2 minutes. Open “Sub2API · Logicc 会话导入” in the toolbar and click “读取并填入”.",
+          "success": "JWT, Cookie and Session ID imported. Review the form and save the account.",
+          "expired": "Import timed out. Start the import again.",
+          "invalid": "The session was invalid or expired. Refresh the Logicc tab and retry."
+        },
+        hint: 'Log in to app.logicc.com. Copy the __client cookie from clerk.logicc.com and the sess_ Session ID. A Session JWT can also be used; it expires quickly without a refresh cookie. Model default selects the upstream default; use account model discovery for exact IDs.',
+        editingHint: 'Leave fields empty to keep existing credentials.',
+        credentialsRequired: 'Enter a Session JWT, or both __client cookie and Session ID.',
+        access_token: 'Session JWT',
+        client_cookie: '__client Cookie (value only)',
+        session_id: 'Session ID (sess_...)',
+        assistant_id: 'Assistant ID (optional)',
+      },
       officeQuota: {
         restrictionObserved: 'Last request reported: ',
         imageQuotaLimited: 'Image generation quota is exhausted; text model quota is not established.',
