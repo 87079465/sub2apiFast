@@ -1443,6 +1443,23 @@ func (s *GatewayService) GetAvailableModels(ctx context.Context, groupID *int64,
 		}
 
 		mapping := acc.GetModelMapping()
+		// Logicc's catalog is account-specific. Unmapped accounts must discover
+		// their upstream models instead of exposing only the "default" alias.
+		if acc.IsLogicc() && len(mapping) == 0 {
+			models, err := fetchLogiccModels(ctx, s.accountRepo, &acc)
+			if err != nil {
+				// Preserve the usable default route if this account cannot refresh.
+				modelSet["default"] = struct{}{}
+			} else {
+				for _, model := range models {
+					if id := strings.TrimSpace(model.ID); id != "" {
+						modelSet[id] = struct{}{}
+					}
+				}
+			}
+			hasAnyMapping = len(modelSet) > 0
+			continue
+		}
 		for model := range mapping {
 			// Accounts pulled in through mixed scheduling only contribute the
 			// models that belong to the listing platform (e.g. an antigravity

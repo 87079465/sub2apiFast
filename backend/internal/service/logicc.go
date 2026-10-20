@@ -58,8 +58,14 @@ func withLogiccClient(ctx context.Context, repo AccountRepository, account *Acco
 }
 
 func (s *AccountTestService) GetLogiccModels(ctx context.Context, account *Account) ([]logicc.Model, error) {
+	return fetchLogiccModels(ctx, s.accountRepo, account)
+}
+
+func fetchLogiccModels(ctx context.Context, repo AccountRepository, account *Account) ([]logicc.Model, error) {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
 	var models []logicc.Model
-	err := withLogiccClient(ctx, s.accountRepo, account, func(client *logicc.Client) error { var err error; models, err = client.Models(ctx); return err })
+	err := withLogiccClient(ctx, repo, account, func(client *logicc.Client) error { var err error; models, err = client.Models(ctx); return err })
 	return models, err
 }
 

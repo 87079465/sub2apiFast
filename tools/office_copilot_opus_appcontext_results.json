@@ -1,0 +1,94 @@
+[
+  {
+    "model": "Claude_Opus",
+    "variant": "baseline",
+    "requested_effort": null,
+    "placement": "app-context",
+    "completion_type": 3,
+    "has_error": true,
+    "completed": false,
+    "plugin_calls": 0,
+    "answer_correct": false,
+    "answer_chars": 0,
+    "reasoning_metadata": {},
+    "message_types": {},
+    "frame_types": {
+      "3": 1
+    },
+    "elapsed_seconds": 2.84
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "low",
+    "requested_effort": "low",
+    "placement": "app-context",
+    "completion_type": 3,
+    "has_error": true,
+    "completed": false,
+    "plugin_calls": 0,
+    "answer_correct": false,
+    "answer_chars": 0,
+    "reasoning_metadata": {},
+    "message_types": {},
+    "frame_types": {
+      "3": 1
+    },
+    "elapsed_seconds": 2.8
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "high",
+    "requested_effort": "high",
+    "placement": "app-context",
+    "completion_type": 3,
+    "has_error": true,
+    "completed": false,
+    "plugin_calls": 0,
+    "answer_correct": false,
+    "answer_chars": 0,
+    "reasoning_metadata": {},
+    "message_types": {},
+    "frame_types": {
+      "3": 1
+    },
+    "elapsed_seconds": 2.14
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "invalid_control",
+    "requested_effort": "invalid_probe_value",
+    "placement": "app-context",
+    "completion_type": 3,
+    "has_error": true,
+    "completed": false,
+    "plugin_calls": 0,
+    "answer_correct": false,
+    "answer_chars": 0,
+    "reasoning_metadata": {},
+    "message_types": {},
+    "frame_types": {
+      "3": 1
+    },
+    "elapsed_seconds": 1.98
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "high_error_diagnostic",
+    "requested_effort": "high",
+    "placement": "app-context",
+    "completion_type": 3,
+    "has_error": true,
+    "completed": false,
+    "error_types": [],
+    "error_markers": [],
+    "plugin_calls": 0,
+    "answer_correct": false,
+    "answer_chars": 0,
+    "reasoning_metadata": {},
+    "message_types": {},
+    "frame_types": {
+      "3": 1
+    },
+    "elapsed_seconds": 1.86
+  }
+]

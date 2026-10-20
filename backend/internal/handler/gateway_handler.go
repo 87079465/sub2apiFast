@@ -1322,6 +1322,14 @@ func (h *GatewayHandler) compositeAvailableModels(ctx context.Context, groupID *
 }
 
 func writeModelsList(c *gin.Context, platform string, modelIDs []string) {
+	if platform == service.PlatformLogicc {
+		models := make([]openai.Model, 0, len(modelIDs))
+		for _, id := range modelIDs {
+			models = append(models, openai.Model{ID: id, Object: "model", Created: 1704067200, OwnedBy: "logicc", Type: "model", DisplayName: id})
+		}
+		writeModelsListResponse(c, models)
+		return
+	}
 	if platform == service.PlatformOpenAI {
 		writeOpenAIModelsList(c, modelIDs)
 		return

@@ -1,0 +1,15 @@
+{
+  "completed": true,
+  "error": null,
+  "status": null,
+  "seconds": 15.55,
+  "usage_fields": {
+    ".item.throttling.metering.GPT61SolQueryWeekly.remainingAllowance": 0,
+    ".item.throttling.metering.GPT61SolQueryDailyWord.remainingAllowance": 0,
+    ".item.throttling.metering.GPT61SolQueryWeeklyWord.remainingAllowance": 0,
+    ".item.throttling.metering.GPT61SolQueryDaily.remainingAllowance": 0
+  },
+  "result": [
+    "Success"
+  ]
+}

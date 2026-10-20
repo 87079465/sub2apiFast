@@ -174,6 +174,10 @@ func officeCopilotMessages(body []byte, anthropic bool) ([]office_copilot.Inboun
 }
 
 func officeCopilotRequest(body []byte, anthropic bool) (office_copilot.InboundRequest, error) {
+	body, err := filterOfficeCopilotTools(body)
+	if err != nil {
+		return office_copilot.InboundRequest{}, err
+	}
 	messages, err := officeCopilotMessages(body, anthropic)
 	if err != nil {
 		return office_copilot.InboundRequest{}, err
@@ -212,6 +216,12 @@ func (s *OpenAIGatewayService) forwardOfficeCopilot(ctx context.Context, c *gin.
 		writeError(c, http.StatusBadRequest, "invalid_request_error", "model is required")
 		return nil, fmt.Errorf("model is required")
 	}
+	originalBody := body
+	body, err := filterOfficeCopilotTools(body)
+	if err != nil {
+		writeError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, err
+	}
 	request, err := officeCopilotRequest(body, anthropic)
 	if err != nil {
 		writeError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
@@ -231,6 +241,7 @@ func (s *OpenAIGatewayService) forwardOfficeCopilot(ctx context.Context, c *gin.
 		}
 	}
 	SetActualOpenAIUpstreamEndpoint(c, "/m365Copilot/ChatHub")
+	ctx = office_copilot.BeginDiagnostics(ctx, account.ID, originalBody, anthropic)
 	resp, err := officeCopilotInference(ctx, s.accountRepo, account, request, billingModel)
 	if err != nil {
 		writeError(c, http.StatusBadGateway, "api_error", "Office Copilot inference failed; check the account inference test")

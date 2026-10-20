@@ -104,6 +104,7 @@ func (c *Client) sendChatHub(ctx context.Context, body []byte) (*http.Response, 
 	}
 	request, _ := json.Marshal(map[string]any{"type": 4, "invocationId": "0", "target": "chat", "arguments": []json.RawMessage{body}})
 	request = append(request, 0x1e)
+	logChatHubDiagnostic(ctx, endpoint, origin, body)
 	if err := conn.WriteMessage(websocket.TextMessage, request); err != nil {
 		cleanup()
 		return nil, fmt.Errorf("Office Copilot chat invocation failed")

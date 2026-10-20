@@ -1,0 +1,142 @@
+[
+  {
+    "timestamp": 1791816239.5290399,
+    "type": "request",
+    "requestId": "20144.185",
+    "method": "GET",
+    "url": "https://res.cdn.office.net/midgard/versionless/dty-a7d1e4b9-3c58-4f2a-b6e3-9d8f2a1c5e7b-default-prod-agent-excel-strings-zh-hans-officeaicopilot-agent-excel_strings-json_ddc4ca3bcbac5fce4ca6.js",
+    "headers": {
+      "Origin": "https://fa000000124.resources.office.net",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "Referer": "https://fa000000124.resources.office.net/",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "sec-ch-ua": "\"Microsoft Edge\";v=\"154\", \"Not A(Brand\";v=\"99\", \"Microsoft Edge WebView2\";v=\"154\", \"Chromium\";v=\"154\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "postData": null
+  },
+  {
+    "type": "responseBody",
+    "body": "\"use strict\";(self.webpackChunk_1js_officeaicopilot_agent_excel_density=self.webpackChunk_1js_officeaicopilot_agent_excel_density||[]).push([[27272],{376773:e=>{e.exports=JSON.parse('{\"ActivityCardHeader\":\"活动\",\"AddDataConnectionApproveButton\":\"批准\",\"AddDataConnectionConnectionNameLabel\":\"连接名称\",\"AddDataConnectionDenyButton\":\"拒绝\",\"AddDataConnectionSpeedBumpMessage\":\"Copilot 想要向此工作簿添加新的数据连接。查看以下详细信息，然后批准或拒绝。\",\"AddSourcesSkillsAndMoreTooltip\":\"添加来源、技能等\",\"AgentModeName\":\"Copilot\",\"AgentModeTitle\":\"使用智能体模式编辑\",\"AIDisclaimerText\":\"AI 生成的内容可能不正确\",\"AllAgentsMenuLabel\":\"所有智能体\",\"AppliesToThisChat\":\"应用于此聊天。\",\"ApplyRequiredSensitivityLabelErrorMessage\":\"Copilot 无法对文件应用正确的敏感度标签，因为它无法处理你引用的内容。\",\"ArcadiaOpusDailyTurnLimitErrorMessage\":\"你已达到 Opus 每日限制。切换到“自动”可为每项任务选择最佳模型，然后重新发送提示。\",\"ArcadiaOpusWeeklyTurnLimitErrorMessage\":\"你已达到 Opus 每周限制。切换到“自动”可为每项任务选择最佳模型，然后重新发送提示。\",\"AttachedEntitiesGroupAriaLabel\":\"已附加文件\",\"AutoCalculationModeDisabledMessage\":\"需要自动计算才能访问智能体模式。\",\"AutoModelName\":\"自动\",\"AutoModelNameSubtitle\":\"任务的最佳模型\",\"AutoSaveDisabledSpeedbumpContinueButtonText\":\"继续而不自动保存\",\"AutoSaveDisabledSpeedbumpEnableFailedMessage\":\"无法打开自动保存。请尝试手动启用或不启用它继续。\",\"AutoSaveDisabledUnsupportedAction\":\"启用“自动保存”\",\"AutoSaveDisabledUnsupportedMessage\":\"保存以在你和 Copilot 开始更改之前备份你的工作。\",\"AutoSaveDisabledUnsupportedTitle\":\"自动保存已关闭\",\"BebopPromptStarterMoreLabel\":\"更多\",\"BizChatBusinessMessage\":\"(工作/学校)\",\"BizChatConsumerMessage\":\"(个人)\",\"BizChatPlusMenuAddWorkContent\":\"添加工作内容\",\"BizChatPlusMenuAttachContent\":\"添加内容\",\"BizChatPlusMenuMentionSkill\":\"选择插件和技能\",\"CellEditModeBlockedMessage\":\"编辑单元格时，Copilot 可能无法使用工作簿。完成单元格编辑，以便 Copilot 可以继续工作。\",\"CellEditModeBlockedTitle\":\"正在编辑单元格\",\"ChainOfThoughtDefaultHeader\":\"步骤 {0}\",\"ChangeDataSourcesMenuItemLabel\":\"更改数据源\",\"CharactersRemainingICU\":\"{count, plural,  other{剩余 {0} 个字符}}\",\"CharactersRemainingMessage\":\"剩余 {0} 个字符\",\"CharactersRemainingSingular\":\"剩余 1 个字符\",\"ChatButtonText\":\"聊天\",\"ChatInputAddWorkContent\":\"添加工作内容\",\"ChatInputAriaLabel\":\"聊天输入\",\"ChatInputDragDropFile\":\"将文件放到此处\",\"ChatInputFileCountErrorMessage\":\"你尝试添加的文件数超出了上限。Copilot 目前支持一次最多添加 {0} 个文件。\",\"ChatInputFileSearchNoSuggestion\":\"无可用建议\",\"ChatInputFileSearchPlaceholder\":\"开始键入以进行搜索\",\"ChatInputFileSizeErrorMessage\":\"文件大小超过最大限制。Copilot 目前支持最多 {0}MB 的文件大小。\",\"ChatInputFileTypeNotSupported\":\"不支持的文件类型\",\"ChatInputFileUploadFailedMessage\":\"无法上传一个或多个文件。请重试。\",\"ChatInputFileUploadNotAvailable\":\"文件上传不可用\",\"ChatInputFileUploadSlowMessage\":\"上传所花的时间比预期长。您可以继续等待或删除文件，然后重试。\",\"ChatInputPlaceholder\":\"描述你想要创建或编辑的内容\",\"ChatModeChatInputPlaceholder\":\"与 Copilot 聊天\",\"CitationLabel\":\"引文\",\"CitationNoLinkAvailable\":\"无可用链接\",\"CitationPreviewAriaLabel\":\"引文预览\",\"ClaudeDataRetentionDisclaimer\":\"部分模型需要数据保留: 你的提示和响应由模型提供商保留。\",\"ClaudeDataRetentionInfoAriaLabel\":\"数据保留信息\",\"ClaudeDataRetentionLearnMore\":\"了解详细信息\",\"ClaudeModelName\":\"Claude\",\"ClaudeModelNameSubtitle\":\"Anthropic\",\"ClaudeModelNameVersion\":\"Claude Opus 4.5\",\"CleanDataApprovalCellCount\":\"{0} 个单元格\",\"CleanDataApprovalChangeAria\":\"将 {0} 更改为 {1}\",\"CleanDataApprovalCollapseGroupLabel\":\"折叠组\",\"CleanDataApprovalExpandGroupLabel\":\"展开组\",\"CleanDataApprovalProceedText\":\"应用所选修复项。\",\"CleanDataApprovalSelectAllLabel\":\"全选\",\"CleanDataApprovalSelectionSummary\":\"已选 {0} 项更改(共 {1} 项)\",\"CloseButtonTooltip\":\"关闭\",\"CloseButtonTooltipV2\":\"关闭 Copilot 聊天\",\"CombinedDisclaimerBasePrefix\":\"你正在使用 \",\"CombinedDisclaimerConjunction\":\"和\",\"CombinedDisclaimerSingleItem\":\"你正在使用 {0}。\",\"CombinedDisclaimerTwoItem\":\"你正在使用 {0} 和 {0}。\",\"ConnectorAuthDialogCancel\":\"取消\",\"ConnectorAuthDialogContent\":\"允许 Copilot 从 {0} 安全地读取你的内容。\",\"ConnectorAuthDialogContinue\":\"继续转到 {0}\",\"ConnectorAuthDialogTitle\":\"连接 {0}\",\"ConnectorEnvironmentDialogCloseAriaLabel\":\"关闭对话框\",\"ConnectorEnvironmentDialogEnvironmentLabel\":\"选择环境\",\"ConnectorEnvironmentDialogHelperText\":\"让 Copilot 安全地读取你的 {0}。\",\"ConnectorEnvironmentDialogLoadFailed\":\"加载环境选项失败\",\"ConnectorEnvironmentDialogNoOptions\":\"无可用选项\",\"ConnectorEnvironmentDialogSearchPlaceholder\":\"搜索\",\"ContextualNewBlankDocumentTitle\":\"你想要创建什么?\",\"ConversationLoadedAnnouncement\":\"对话已加载。{0}\",\"ConversationsPanelAllExcelConversations\":\"查看更多\",\"ConversationsPanelAllFilesFilterLabel\":\"所有文件\",\"ConversationsPanelAriaLabel\":\"历史聊天记录\",\"ConversationsPanelChat\":\"新聊天\",\"ConversationsPanelChatOptionsAriaLabel\":\"{0} 的更多选项\",\"ConversationsPanelConversations\":\"{0} 中的聊天\",\"ConversationsPanelCurrentFileFilterAppliedAnnouncement\":\"正在显示此文件中的聊天记录\",\"ConversationsPanelCurrentFileFilterDismissedAnnouncement\":\"正在显示所有文件中的聊天记录\",\"ConversationsPanelCurrentFileFilterLabel\":\"此文件\",\"ConversationsPanelDeleteChatCancelLabel\":\"取消\",\"ConversationsPanelDeleteChatConfirmLabel\":\"删除\",\"ConversationsPanelDeleteChatDialogBody\":\"这将永久删除 {0}。\",\"ConversationsPanelDeleteChatDialogCloseAriaLabel\":\"关闭\",\"ConversationsPanelDeleteChatDialogDisclaimer\":\"不会删除在此聊天中创建的记忆和引用的内容(文件、电子邮件、任务等)。\",\"ConversationsPanelDeleteChatDialogTitle\":\"是否删除聊天?\",\"ConversationsPanelDeleteChatErrorMessage\":\"无法删除聊天。重试。\",\"ConversationsPanelDeleteChatLabel\":\"删除\",\"ConversationsPanelDeleteChatSuccessAnnouncement\":\"已删除聊天\",\"ConversationsPanelDismissCurrentFileFilterAriaLabel\":\"显示所有文"
+  },
+  {
+    "timestamp": 1791816240.5077777,
+    "type": "request",
+    "requestId": "20144.192",
+    "method": "GET",
+    "url": "https://substrate.office.com/m365Copilot/GetChats?request=%7B%22source%22%3A%22excel%22%2C%22traceId%22%3A%22%22%2C%22productThreadType%22%3A%22Excel%22%2C%22mergeWorkWebChats%22%3Atrue%2C%22threadType%22%3A%22appchat%22%7D",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "authorization": "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiSllpSjlyUXhIQXdmN1BEaHVfMXJGSHNVeW9jXzlKcnFkdXNYZDFXcGFHYyIsInppcCI6IkRFRiJ9..t0T-h5EPaHDq2zsoSXqbbw.c6koiM-ALumv3FIID8DRtmWrgviMU73zUlP3RAebhRsOLGJygPorP362iMNHm76qu7nOaKSKda1vxo9Etcs_TLRV5dNzOHh0peIEL7jiXInf3vxofgWMpl_ZY554m7hYnT6-P5pmeIqN4omSE91o8jo-RmB_Iu2q6hR9jUuNPs_x_8d34fFljxZ1DvnZyt06gqC92_5SedoIW7Kww_JsFeuSuWF0vwvIgFiraeXyZm5hvPzQIGN-pxW94hgqRIPKNkv9TKBwxLYcqo0zJycDiliOoFYdaQD9S_cX-NFISMNQ3NREq6ABH1dQXNqdYe0wkqAM9bBxTX_nENE11IKtB8sNX10SjPNYDQD3M_kgLxpIaLZ1mL5dDbj9JkEupS7pGydls1zBpN7mhrzqrhECeTebHT1HDVoJVWYBqqbbSq-1d-ZmDwywjafHqzecxJKgKYZf8czbAbxc5zRFZnrl-RhKrOEEikPPIK7R8vNVGzIfYbR_ee6UHhvSZgKVAH4CqHXNVAce3upiBL2TvHBiwEYv8oyEsq6tehy-PVvTrMoRZVmAdZPQlrTR1e5vI1XQ3EDmj1Jm9O0hI5WMdSFRC8fUJEECpMZuVaGte5mAhwzWobIHNzc4KaFr0Y05qCskeV0TY6mFdCUKe0M-ZQDR9lyRyfSP9hCEcHusmshE0Okl3F6R-Gtw8hoC2dxe-8aygyPD5fzKw8WLojKbxGuOQtDZ1X6LtlHPbRABzKwbEn_2Xb979Q947qnpSGoTjLy2aaEcmcO8-mvFWQqrr1Qrlja6jK-Nz28EeUSLG8H1ayxkpIsZvnvwHig8ILgmEM7kCRXj47uAuZI2qXWvlgMQ2AWuUQO8c_AsBPdc3qmoVlwXQf5-TkmEOR_E-oHoUSCr_KV5SyUlt4MpRjYTndujjq4eg8TwgMIkZwTgOkX2_lMOwrtC8lBPaz4V6q9ScKogXU0ZlfjdjN-aih2o7cCDoebzxtTqBrapE6o3qIY0mfeSZDLDQpk-MvN7Su8PX5BMu4LBX0J4Heu7HoJ52-ZCDsSIA6c_A5VeNwfZIPG1abrawhx3GQWJNnc_Cy8aVY8u2Lm3sIkx17f-mr2NxQ_Ol1d3sEP_MZ-st-a7GlKzBj6ahVYgtPC5KbV7HvNhriVbksvpa4Fy4d6-N8Z9RWs_wkkl4Hw8vx-eHNvRCWJXP4PGy-M39yNWbp4Y3sELUs6L7pJJf204xvyH_c6MTEUUdqz_U-6vcN8Qpis29XKJnH0Uw_UVIKts0D9PKmASPSJiKMMGSGr30YSEn09D2cdPlyACve-tj_k3gpFxYUh5yXWaFKEThirx0BIc3Cuh9eK5SswDNK3iUPXsQKPL-NM0fRs9Fwx6iAfkgLGc2J6Yc570GhUv-tmuyVuC-6QKfuURl5HI5W-GC3Ot5j8k4ZUI_IoFJJT6EiuHEHf4DAoW5bIAiW_4B6Fbz6yQBk3vjUOfGCyoee597exhkalGB68SphazX5FsIYJ6wx4Ib2JikQ0uGrDbDyFnDWXgK6yzvoAYhGLjepsJkmLZ9b78goRRWvqU3B-nrEeVh81-FYjZIK7Mm0qYeUxXyLJIs1yZDEEp.2YI4GXhLrCNtZrtxudKKm1NPdWb18kPX8FqyaWrgabw",
+      "x-routingparameter-sessionkey": "00000000-0000-0000-6080-b69207f36621",
+      "Referer": "https://fa000000124.resources.office.net/",
+      "x-anchormailbox": "Oid:00000000-0000-0000-6080-b69207f36621@84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa",
+      "x-scenario": "ExcelSidepaneWebPremiumConsumerCopilot",
+      "sec-ch-ua": "\"Microsoft Edge\";v=\"154\", \"Not A(Brand\";v=\"99\", \"Microsoft Edge WebView2\";v=\"154\", \"Chromium\";v=\"154\"",
+      "x-clientrequestid": "",
+      "sec-ch-ua-mobile": "?0",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "content-type": "application/json"
+    },
+    "postData": null
+  },
+  {
+    "timestamp": 1791816240.509285,
+    "type": "request",
+    "requestId": "D0D0A13A1391EE2B2F6816B508A5E6DC",
+    "method": "OPTIONS",
+    "url": "https://substrate.office.com/m365Copilot/GetChats?request=%7B%22source%22%3A%22excel%22%2C%22traceId%22%3A%22%22%2C%22productThreadType%22%3A%22Excel%22%2C%22mergeWorkWebChats%22%3Atrue%2C%22threadType%22%3A%22appchat%22%7D",
+    "headers": {
+      "Accept": "*/*",
+      "Access-Control-Request-Headers": "authorization,content-type,x-anchormailbox,x-clientrequestid,x-routingparameter-sessionkey,x-scenario",
+      "Access-Control-Request-Method": "GET",
+      "Origin": "https://fa000000124.resources.office.net",
+      "Sec-Fetch-Mode": "cors",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+    },
+    "postData": null
+  },
+  {
+    "timestamp": 1791816241.005716,
+    "type": "request",
+    "requestId": "20144.194",
+    "method": "GET",
+    "url": "https://graph.microsoft.com/v1.0/me/drive/special/copilotuploads",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "Authorization": "Bearer EwBIBMl6BAAUCBUz0PacyGyQMzAdZCXlnFTa1qQAAfzUvoITkrRripen5qlV2kjt20XXYj60DmrgaZ2QNHx5tGZkfLBJ5YCMUiRYtIgAbgKocrp29SV27XkOmEQ7S3nGXahcJAJDLRLwo9KqTtf+DEkjzU1m4wioDp5qdNvNi7swOIvbtb8Htmc97kyqJ730MppJQJr2v9nq3wpb/+sIGDI7xERuuK/AV5WfH37hLtSFBFQhzhlDzmT4/l1z+VapBNH0ZQtGkoU8VmO92+sQiOOeDv7RiJSWfLob/Q7/cEex4O1xTdnBn30Mpj/BZCJH1CYNi6qMfTE2AnIlvcbbs4Fz7jxvYnGxdDwqwIXod0cqNxOvYaFlfEtxbpwaVQwQZgAAEPpHe2b2Rc40lJ4FWniMuu8QAylEq2toEhU60mnaxXqazk30xJPYgm02Y7CmlLNVklxcHXmDCtN/atTKOa0VsVxnUNjqoUGWXXIfRmxK/hMfO6v5tmje8xp+ZjVeszJsX7jHC4vzh6qYzefnDLWInkYoQWtfL8zawUaQE9RGOYvi8rIWaEPJbuRIw5FpE3MTPICLY1eSi5L85VlenrKb+7zBYdKvXLlOjK8xVGMMW1dedrDygI/YbBVxZ+Xx73q+QpYiTHeqWTON9eazZZOniju5Mft/IDvnhYENzrrIVrxGzJOfKPHi2uqVhAf3yfc0i7pgXHUEnISfB7CyCP0BWnoVJA7JifFxEKq6/NaQTuFo4cRHGk71vTmaAuW67Hn9PanN75NL2Y6WFp85V7T7wbAJ0BJCPFvnmEOXuMzDGFsRgZlmWrlDY6Qc4wLCUZ52ZDVvQdx6SJZmj4tWCO/i8PICchQ+mpiJ0hDlR8pbGbugO1rPV//YLxhgQ1D7zHRaI4aIdysezI6/tDt9lNF+NeIgABprlfEIiFQlpR31zF6RlvHiIUcfxJjlSVLoJYtUNf8rx/hs+0EWcEXXX9RafjbUHV1K/WKU7Gq1LMKDWaBuzjiBWIkTyx34gT7E4HxwXKdJw6Fp9i0dK8p3oUx56G6V4zmOQYqWMPDnHI3psq5LEFeEFbSA8PR+/8J89vJSbjcmEcVua4YcCLdyDVwU1IjUZAGPlIllhlb7ZPGR0/u/vBg9vPutjSN43FN15shZwkZc36CVUfmZQx+FhROp2XNHQ4BPGuWzVnqMALGv3mktgNdJKnonbY7mfVadfuG2auBVVTGtGoCCKhdswShSql7SRlKuLs4oJM+nP05xDUkpOdai9Rqp/hvtbJKyumpAF8NN3mZp00RHdHJGU95d36uWUHywROrKqchurADlTE0HQNCvHCAk0sQvZgO+HA0sATiLIJurOU995WMzSJ8EZ2+0FoAQeBL9XfzmKf62rsKY1D1LR2TbQVFpj/mhCpDqytdJYdr6HjSX1y/p/sz1iEJ99M9bT2JI/zgcFm6EHMvsyuUpAw==",
+      "KnownConsumerLocation": "true",
+      "Referer": "https://fa000000124.resources.office.net/",
+      "sec-ch-ua": "\"Microsoft Edge\";v=\"154\", \"Not A(Brand\";v=\"99\", \"Microsoft Edge WebView2\";v=\"154\", \"Chromium\";v=\"154\"",
+      "SdkVersion": "graph-js/3.0.7 (featureUsage=7)",
+      "sec-ch-ua-mobile": "?0",
+      "client-request-id": "7060fb20-df53-c380-3fb7-9920416107d7",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+    },
+    "postData": null
+  },
+  {
+    "timestamp": 1791816241.007222,
+    "type": "request",
+    "requestId": "A26A53088E2B53B0F31935500E801F1F",
+    "method": "OPTIONS",
+    "url": "https://graph.microsoft.com/v1.0/me/drive/special/copilotuploads",
+    "headers": {
+      "Accept": "*/*",
+      "Access-Control-Request-Headers": "authorization,client-request-id,knownconsumerlocation,sdkversion",
+      "Access-Control-Request-Method": "GET",
+      "Origin": "https://fa000000124.resources.office.net",
+      "Sec-Fetch-Mode": "cors",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+    },
+    "postData": null
+  },
+  {
+    "type": "responseBody",
+    "body": "{\"chats\":[{\"conversationId\":\"70821139-892a-4998-8a10-cf6d2d83e52a\",\"chatName\":\"\",\"createTimeUtc\":1791815648937,\"updateTimeUtc\":1791815884403,\"expiryTimeUtc\":0,\"isMessageless\":false,\"latestMessageSequenceId\":4,\"isUnread\":false,\"retentionPolicyEffect\":0,\"threadId\":\"19:3tz2YGsmiK2FYpWfoVhEUTqxtmZn2hrFKDaObpasVLM1@thread.v2\",\"isScheduledPromptThread\":false,\"mostRecentGptIds\":[],\"hasLoopPages\":false,\"isLegacyWebChat\":false,\"copilotReferenceId\":\"ExcelAgentV2\",\"hasCopilotTasks\":false,\"turnState\":\"None\"},{\"conversationId\":\"1e3b87fc-0c1d-491f-ad18-56a04c4582ce\",\"chatName\":\"\",\"createTimeUtc\":1791812894516,\"updateTimeUtc\":1791813241617,\"expiryTimeUtc\":0,\"isMessageless\":false,\"latestMessageSequenceId\":4,\"isUnread\":false,\"retentionPolicyEffect\":0,\"threadId\":\"19:j_mOHpz-YwTXzALlKv_WY-ZItmEQ2zOL1Gt3AeW7kPs1@thread.v2\",\"isScheduledPromptThread\":false,\"mostRecentGptIds\":[],\"hasLoopPages\":false,\"isLegacyWebChat\":false,\"copilotReferenceId\":\"ExcelAgentV2\",\"hasCopilotTasks\":false,\"turnState\":\"None\"}],\"totalCountOfSavedChats\":2,\"syncState\":\"eyJJQzNTeW5jU3RhdGUiOiJleUprWld4cGRtVnlaV1JUWldkdFpXNTBjeUk2VzNzaWMzUmhjblFpT2lJeE9UY3dMVEF4TFRBeFZEQXdPakF3T2pBd0t6QXdPakF3SWl3aVpXNWtJam9pTWpBeU5pMHhNQzB4TWxReE5Eb3pPRG93TkM0ME1ETXJNREE2TURBaWZWMHNJbnBsY205TVRWTlVSR1ZzYVhabGNtVmtVMlZuYldWdWRITWlPbHRkTENKemIzSjBUM0prWlhJaU9qRXNJbWx1WTJ4MVpHVmFaWEp2VEUxVFZDSTZkSEoxWlgwPSJ9\",\"retentionPolicyStatus\":0,\"result\":{\"value\":\"Success\",\"message\":\"ChatsReturned=2, ChatsReceivedFromIC3=2, ExcludeAgentChats=False, ExcludeHCPDisabled=True.\",\"serviceVersion\":\"1.0.03571.57830\"}}"
+  },
+  {
+    "type": "responseBody",
+    "body": "{\"@odata.context\":\"https://graph.microsoft.com/v1.0/$metadata#users('mizanne.iolar%40outlook.com')/drive/special/$entity\",\"createdDateTime\":\"2026-10-12T13:25:41Z\",\"eTag\":\"\\\"{1B45B938-3C04-4FBF-9A8F-5F3C5590473C},1\\\"\",\"id\":\"6080B69207F36621!s1b45b9383c044fbf9a8f5f3c5590473c\",\"lastModifiedDateTime\":\"2026-10-12T13:25:41Z\",\"name\":\"Microsoft Copilot Chat 文件\",\"webUrl\":\"https://onedrive.live.com?cid=6080b69207f36621&id=6080B69207F36621!s1b45b9383c044fbf9a8f5f3c5590473c\",\"isAuthoritative\":false,\"size\":0,\"createdBy\":{\"application\":{\"id\":\"c0ab8ce9-e9a0-42e7-b064-33d422df41f1\",\"displayName\":\"M365Chat\"},\"user\":{\"email\":\"mizanne.iolar@outlook.com\",\"id\":\"6080b69207f36621\",\"displayName\":\"Mizanne Iolar\"}},\"lastModifiedBy\":{\"application\":{\"id\":\"c0ab8ce9-e9a0-42e7-b064-33d422df41f1\",\"displayName\":\"M365Chat\"},\"user\":{\"email\":\"mizanne.iolar@outlook.com\",\"id\":\"6080b69207f36621\",\"displayName\":\"Mizanne Iolar\"}},\"parentReference\":{\"driveType\":\"personal\",\"driveId\":\"6080b69207f36621\",\"id\":\"6080B69207F36621!sea8cc6beffdb43d7976fbc7da445c639\",\"name\":\"Documents\",\"path\":\"/drive/root:\",\"siteId\":\"b0f61119-3ae0-4dfb-b541-a1de36f40dcf\"},\"fileSystemInfo\":{\"createdDateTime\":\"2026-10-12T13:25:41Z\",\"lastModifiedDateTime\":\"2026-10-12T13:25:41Z\"},\"folder\":{\"childCount\":0,\"view\":{\"sortBy\":\"name\",\"sortOrder\":\"ascending\",\"viewType\":\"thumbnails\"}},\"specialFolder\":{\"name\":\"copilotUploads\"}}"
+  },
+  {
+    "timestamp": 1791816244.347876,
+    "type": "request",
+    "requestId": "20144.197",
+    "method": "POST",
+    "url": "https://graph.microsoft.com/v1.0/me/drive/special/copilotuploads:/image.png:/createUploadSession",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "Authorization": "Bearer EwBIBMl6BAAUCBUz0PacyGyQMzAdZCXlnFTa1qQAAfzUvoITkrRripen5qlV2kjt20XXYj60DmrgaZ2QNHx5tGZkfLBJ5YCMUiRYtIgAbgKocrp29SV27XkOmEQ7S3nGXahcJAJDLRLwo9KqTtf+DEkjzU1m4wioDp5qdNvNi7swOIvbtb8Htmc97kyqJ730MppJQJr2v9nq3wpb/+sIGDI7xERuuK/AV5WfH37hLtSFBFQhzhlDzmT4/l1z+VapBNH0ZQtGkoU8VmO92+sQiOOeDv7RiJSWfLob/Q7/cEex4O1xTdnBn30Mpj/BZCJH1CYNi6qMfTE2AnIlvcbbs4Fz7jxvYnGxdDwqwIXod0cqNxOvYaFlfEtxbpwaVQwQZgAAEPpHe2b2Rc40lJ4FWniMuu8QAylEq2toEhU60mnaxXqazk30xJPYgm02Y7CmlLNVklxcHXmDCtN/atTKOa0VsVxnUNjqoUGWXXIfRmxK/hMfO6v5tmje8xp+ZjVeszJsX7jHC4vzh6qYzefnDLWInkYoQWtfL8zawUaQE9RGOYvi8rIWaEPJbuRIw5FpE3MTPICLY1eSi5L85VlenrKb+7zBYdKvXLlOjK8xVGMMW1dedrDygI/YbBVxZ+Xx73q+QpYiTHeqWTON9eazZZOniju5Mft/IDvnhYENzrrIVrxGzJOfKPHi2uqVhAf3yfc0i7pgXHUEnISfB7CyCP0BWnoVJA7JifFxEKq6/NaQTuFo4cRHGk71vTmaAuW67Hn9PanN75NL2Y6WFp85V7T7wbAJ0BJCPFvnmEOXuMzDGFsRgZlmWrlDY6Qc4wLCUZ52ZDVvQdx6SJZmj4tWCO/i8PICchQ+mpiJ0hDlR8pbGbugO1rPV//YLxhgQ1D7zHRaI4aIdysezI6/tDt9lNF+NeIgABprlfEIiFQlpR31zF6RlvHiIUcfxJjlSVLoJYtUNf8rx/hs+0EWcEXXX9RafjbUHV1K/WKU7Gq1LMKDWaBuzjiBWIkTyx34gT7E4HxwXKdJw6Fp9i0dK8p3oUx56G6V4zmOQYqWMPDnHI3psq5LEFeEFbSA8PR+/8J89vJSbjcmEcVua4YcCLdyDVwU1IjUZAGPlIllhlb7ZPGR0/u/vBg9vPutjSN43FN15shZwkZc36CVUfmZQx+FhROp2XNHQ4BPGuWzVnqMALGv3mktgNdJKnonbY7mfVadfuG2auBVVTGtGoCCKhdswShSql7SRlKuLs4oJM+nP05xDUkpOdai9Rqp/hvtbJKyumpAF8NN3mZp00RHdHJGU95d36uWUHywROrKqchurADlTE0HQNCvHCAk0sQvZgO+HA0sATiLIJurOU995WMzSJ8EZ2+0FoAQeBL9XfzmKf62rsKY1D1LR2TbQVFpj/mhCpDqytdJYdr6HjSX1y/p/sz1iEJ99M9bT2JI/zgcFm6EHMvsyuUpAw==",
+      "KnownConsumerLocation": "true",
+      "Referer": "https://fa000000124.resources.office.net/",
+      "sec-ch-ua": "\"Microsoft Edge\";v=\"154\", \"Not A(Brand\";v=\"99\", \"Microsoft Edge WebView2\";v=\"154\", \"Chromium\";v=\"154\"",
+      "SdkVersion": "graph-js/3.0.7 (featureUsage=7)",
+      "sec-ch-ua-mobile": "?0",
+      "client-request-id": "1a6d14bb-1df4-18ca-a884-e693a7626276",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "Content-Type": "application/json"
+    },
+    "postData": "{\"item\":{\"@microsoft.graph.conflictBehavior\":\"rename\",\"name\":\"image.png\"}}"
+  },
+  {
+    "timestamp": 1791816244.3487062,
+    "type": "request",
+    "requestId": "BBC9FB9E7F543E454BE81FD290E1B6BF",
+    "method": "OPTIONS",
+    "url": "https://graph.microsoft.com/v1.0/me/drive/special/copilotuploads:/image.png:/createUploadSession",
+    "headers": {
+      "Accept": "*/*",
+      "Access-Control-Request-Headers": "authorization,client-request-id,content-type,knownconsumerlocation,sdkversion",
+      "Access-Control-Request-Method": "POST",
+      "Origin": "https://fa000000124.resources.office.net",
+      "Sec-Fetch-Mode": "cors",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+    },
+    "postData": null
+  },
+  {
+    "type": "responseBody",
+    "body": "{\"@odata.context\":\"https://graph.microsoft.com/v1.0/$metadata#microsoft.graph.uploadSession\",\"expirationDateTime\":\"2026-10-12T14:59:05.228Z\",\"nextExpectedRanges\":[\"0-\"],\"uploadUrl\":\"https://my.microsoftpersonalcontent.com/personal/6080b69207f36621/_api/v2.0/drive/items/016DUEPLNORUMVBYYTYBE3HJDHP2WKW4AM/uploadSession?guid='9d433f17-fc7f-4d0b-8c83-e46d8012a4b9'&overwrite=False&rename=True&dc=0&tempauth=v1e.eyJzaXRlaWQiOiJiMGY2MTExOS0zYWUwLTRkZmItYjU0MS1hMWRlMzZmNDBkY2YiLCJhcHBfZGlzcGxheW5hbWUiOiJNMzY1Q2hhdENsaWVudCIsImFwcGlkIjoiYzBhYjhjZTktZTlhMC00MmU3LWIwNjQtMzNkNDIyZGY0MWYxIiwiYXVkIjoiMDAwMDAwMDMtMDAwMC0wZmYxLWNlMDAtMDAwMDAwMDAwMDAwL215Lm1pY3Jvc29mdHBlcnNvbmFsY29udGVudC5jb21AOTE4ODA0MGQtNmM2Ny00YzViLWIxMTItMzZhMzA0YjY2ZGFkIiwiZXhwIjoiMTc5MTkwMjY0NSJ9.xe0ZPpnv603UxJy2V8TwkEpLXbr2_Z9g2YgPZx_-otdaxy0vPOlQcksbdbhiB98KJ8mCbRAwq5DrpZCTDM-AU6OYXJI7HBYCv3JxN6zItxLCsR1FH-77izGnlKREKDr9jY4_Ms3OFS5Zz4FJbV5MIVBrxZIzVOdXbakEy1I15i38NoaKCE2psmcfTw-VldLFuGFkEltXyMOCMvsJXOaRN2c2x8QtD0tmu1__mc8ncvVCAN0W2u6NJZhRL57ogPk4MBC9tHqfv9guskBGyDxOKO7ZZwFm0ECyyLTcqlZzLnaiAhUErSdmaXvj8cApIk6qUJ5Jr7RiCY2S0yxiuI0uR8AKS_plwObxPgQeYZRh191tWFZCCTEp1CQQdaM8JVnQyekXOX64AecidwQddMR-t4Sd8RHtxkJAdM68mVrSiZNpfsZANBHYGVFx7tJMrhae9zyEqWC7Ovr_uP_gdubNu2esvsw-xK8pkfH2EnimOcX40w7W_JyDtGf6DtbzgRq6.lO5thkeMX6wNHXdoECvblavgab6X5vl9MJeIpJ6Q84Q\"}"
+  }
+]

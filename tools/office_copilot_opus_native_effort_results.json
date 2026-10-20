@@ -1,0 +1,98 @@
+[
+  {
+    "model": "Claude_Opus",
+    "variant": "baseline",
+    "requested_effort": null,
+    "placement": "anthropic",
+    "first_text_seconds": 9.0,
+    "result": "Success",
+    "completion_type": 3,
+    "has_error": false,
+    "completed": true,
+    "plugin_calls": 1,
+    "answer_correct": true,
+    "answer_chars": 5,
+    "reasoning_metadata": {},
+    "message_types": {
+      "Chat": 5
+    },
+    "frame_types": {
+      "1": 6,
+      "2": 1,
+      "3": 1
+    },
+    "elapsed_seconds": 12.73
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "low",
+    "requested_effort": "low",
+    "placement": "anthropic",
+    "first_text_seconds": 10.47,
+    "result": "Success",
+    "completion_type": 3,
+    "has_error": false,
+    "completed": true,
+    "plugin_calls": 2,
+    "answer_correct": true,
+    "answer_chars": 5,
+    "reasoning_metadata": {},
+    "message_types": {
+      "Chat": 4
+    },
+    "frame_types": {
+      "1": 6,
+      "2": 1,
+      "3": 1
+    },
+    "elapsed_seconds": 15.67
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "high",
+    "requested_effort": "high",
+    "placement": "anthropic",
+    "first_text_seconds": 9.17,
+    "result": "Success",
+    "completion_type": 3,
+    "has_error": false,
+    "completed": true,
+    "plugin_calls": 1,
+    "answer_correct": true,
+    "answer_chars": 5,
+    "reasoning_metadata": {},
+    "message_types": {
+      "Chat": 4
+    },
+    "frame_types": {
+      "1": 5,
+      "2": 1,
+      "3": 1
+    },
+    "elapsed_seconds": 14.12
+  },
+  {
+    "model": "Claude_Opus",
+    "variant": "invalid_control",
+    "requested_effort": "invalid_probe_value",
+    "placement": "anthropic",
+    "first_text_seconds": 7.38,
+    "result": "Success",
+    "completion_type": 3,
+    "has_error": false,
+    "completed": true,
+    "plugin_calls": 1,
+    "answer_correct": true,
+    "answer_chars": 5,
+    "reasoning_metadata": {},
+    "message_types": {
+      "Chat": 5
+    },
+    "frame_types": {
+      "1": 6,
+      "2": 1,
+      "3": 1
+    },
+    "elapsed_seconds": 11.33
+  }
+]
